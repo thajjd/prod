@@ -3,36 +3,53 @@ var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 var fs = require('fs');
 
+var physicsLoopIntervall = 1000/66;
+var serverUpdateLoopIntervall = 1000/22;
 var ID = require('./js/id.js');
 
 //resources
 var player=require('./js/player.js').player;
-
-
 var connectedPlayers = [];
-var clientFps = 1000/60;
-var serverFps;
 
 io.on('connection', function(socket){
 	var id=ID.id();
   	console.log('a '+id+' connected ');
 
-
-  	var thePlayer = new player(id);
-	connectedPlayers.push(thePlayer);
+  	var currentSocketPlayer = new player(id);
+  	connectedPlayers.push(currentSocketPlayer);
+	socket.emit('initRemotePlayers', connectedPlayers);
+	
+	// socket.emit('initSocketSelf', {me:currentSocketPlayer});
 
   	socket.on('input', function(inputData){
-  		thePlayer.inputData = inputData;
+  		currentSocketPlayer.inputData = inputData;
   	});
 
-	io.emit('thecolor', thePlayer.color);
-
+	socket.on('disconnect', function(){
+		console.log(id + 'disconnected');
+		io.sockets.emit(id + ' disconnected');
+	});
 });
 
-io.on('disconnection', function(socket){
-	console.log(id + 'disconnected');
-	io.sockets.emit(id + 'disconnected');
-});
+
+
+function start(){
+	setInterval(physicsLoop, physicsLoopIntervall);
+	setInterval(serverUpdateLoop, serverUpdateLoopIntervall);
+}
+
+function physicsLoop(){
+	for (var i = connectedPlayers.length - 1; i >= 0; i--) {
+		connectedPlayers[i].update();
+	}
+}
+function serverUpdateLoop(){
+	io.emit('update', connectedPlayers);
+
+}
+
+//INITIATE MOTHER FUCKER
+start();
 
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/Client/index.html');

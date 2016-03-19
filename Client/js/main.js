@@ -1,8 +1,12 @@
 var socket = io();
 
 var connectedPlayers = [];
-var ctx = document.getElementById('canvas');
+var canvas = document.getElementById('canvas');
+console.log(canvas);
+var ctx = canvas.getContext("2d");
 var inputKey = {left:false,up:false,right:false,down:false};
+var me = new localPlayer();
+
 
 
 $(function(){
@@ -14,7 +18,55 @@ $(function(){
 			y: ((e.clientY))
 	    };
 	});
+
 });
+socket.on('initRemotePlayers', function(data){
+	connectedPlayers = data;
+	startLoop();
+	
+});
+// socket.on('initSocketSelf', function(data){
+// 	me.init(data);
+	
+// });
+
+//TODO lägg till fler spelare
+// socket.on('addPlayer', function(data){
+
+// });
+
+//TODO lägg till server update
+socket.on('update', function(data){
+	connectedPlayers = data;
+});
+
+function startLoop(){
+
+	draw();
+
+	window.requestAnimationFrame(startLoop);
+}
+
+//=========== RENDER ============
+
+function draw(){
+
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+	for (var i = connectedPlayers.length - 1; i >= 0; i--) {
+		ctx.beginPath();
+		ctx.rect(connectedPlayers[i].x, connectedPlayers[i].y, connectedPlayers[i].width, connectedPlayers[i].height);
+		ctx.fillStyle = connectedPlayers[i].color;
+		ctx.fill();
+		ctx.closePath();
+	}
+
+	
+
+}
+
+
+//=========== end of RENDER ============
 
 //=========== INPUT =============
 window.addEventListener("keydown", function(e) {
