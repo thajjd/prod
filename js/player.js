@@ -1,4 +1,4 @@
-var speed = 3;
+var speed = 2;
 
 
 var player = function (id){

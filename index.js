@@ -2,6 +2,7 @@ var app = require('express')();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 var fs = require('fs');
+var now = require("performance-now");
 
 var physicsLoopIntervall = 1000/66;
 var serverUpdateLoopIntervall = 1000/22;
@@ -9,8 +10,21 @@ var ID = require('./js/id.js');
 
 //resources
 var player=require('./js/player.js').player;
+var prod=require('./js/prod.js').prod;
+
+//Server variables
 var connectedPlayers = [];
 var prods = [];
+var lastPlayerStates = [];
+var currentPlayersStates = [];
+
+var newTime;
+var oldTime;
+var lastFrameTime;
+var fpsTime = 0;
+var fpsTick = 0;
+var optimalFramerate = 1000/60;
+
 
 io.on('connection', function(socket){
 	var id=ID.id();
@@ -24,9 +38,12 @@ io.on('connection', function(socket){
   		currentSocketPlayer.inputData = inputData;
   	});
 
+  	//Attack
   	socket.on('prod', function(mousePosition){
   		//TODO PROD CREATION
-  		var prod = new prod(id, mousePosition);
+  		var newProd = new prod(id, mousePosition, currentSocketPlayer.x, currentSocketPlayer.y, currentSocketPlayer.color);
+  		prods.push(newProd);
+  		console.log("prod created");
 
   	});
 
@@ -52,10 +69,32 @@ function start(){
 function physicsLoop(){
 	for (var i = connectedPlayers.length - 1; i >= 0; i--) {
 		connectedPlayers[i].update();
+
 	}
+	if (typeof prods !== 'undefined' && prods.length > 0) {
+		for (var i2 = prods.length - 1; i2 >= 0; i2--) {
+			prods[i2].update();
+		}
+	}
+	
+
+	//TODO Delta shit
+	// newTime = now();
+	// lastFrameTime = isNaN(newTime-oldTime)?0:newTime-oldTime;
+	// oldTime=newTime;
+	// var multiplicator= isNaN(lastFrameTime/optimalFramerate)?1: lastFrameTime/optimalFramerate;
+
+	// fpsTime+=lastFrameTime;
+	// fpsTick++;
+
+	// if(fpsTime>1000){
+	// 	console.log( 'Server had '+ fpsTick +' frames last second.');
+	// 	fpsTick=0;
+	// 	fpsTime=0;
+	// }
 }
 function serverUpdateLoop(){
-	io.emit('update', connectedPlayers);
+	io.emit('update', {players:connectedPlayers, prods:prods});
 
 }
 

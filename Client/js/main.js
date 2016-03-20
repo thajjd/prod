@@ -1,20 +1,22 @@
 var socket = io();
 
 var connectedPlayers = [];
+var prods = [];
 var canvas = document.getElementById('canvas');
 
 var mousePos = {x: 0, y: 0};
 
 var inputKey = {left:false,up:false,right:false,down:false};
 var me = new localPlayer();
+var cursorWidth=15;
 
 
 
 
 
 $(function(){
-//TODO
-// canvas.onclick = prod;
+
+canvas.onclick = mouseClickCanvas;
 
 var canvasOffsetx = getOffset( canvas ).left; 
 var canvasOffsety = getOffset( canvas ).top;  
@@ -35,7 +37,8 @@ socket.on('initRemotePlayers', function(data){
 });
 
 socket.on('update', function(data){
-	connectedPlayers = data;
+	connectedPlayers = data.players;
+	prods = data.prods;
 });
 
 function startLoop(){
@@ -46,7 +49,8 @@ function startLoop(){
 }
 
 function mouseClickCanvas(e){
-  socket.emit('prod',{x:mousePos.x,y:mousePos.y});
+	console.log("klick");
+  socket.emit('prod',mousePos);
 }
 
 //=========== RENDER ============
@@ -67,10 +71,18 @@ function draw(){
 		ctx.fillRect(connectedPlayers[i].x, connectedPlayers[i].y, connectedPlayers[i].width, connectedPlayers[i].height);
 	}
 
-	var width=15;
+	if (typeof prods !== 'undefined' && prods.length > 0) {
+		for (var i = prods.length - 1; i >= 0; i--) {
+			ctx.fillStyle = prods[i].color;
+			ctx.fillRect(prods[i].x, prods[i].y, prods[i].width, prods[i].height);
+		}
+	}
+	
+
+	
 	ctx.beginPath();
 	ctx.fillStyle = "#000000";
-  	ctx.arc(mousePos.x - width/2,mousePos.y - width/2,width/2, 0, 2 * Math.PI);
+  	ctx.arc(mousePos.x - cursorWidth/2,mousePos.y - cursorWidth/2,cursorWidth/2, 0, 2 * Math.PI);
   	ctx.fill();
   	ctx.closePath();
 
