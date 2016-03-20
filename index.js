@@ -10,6 +10,7 @@ var ID = require('./js/id.js');
 //resources
 var player=require('./js/player.js').player;
 var connectedPlayers = [];
+var prods = [];
 
 io.on('connection', function(socket){
 	var id=ID.id();
@@ -18,15 +19,25 @@ io.on('connection', function(socket){
   	var currentSocketPlayer = new player(id);
   	connectedPlayers.push(currentSocketPlayer);
 	socket.emit('initRemotePlayers', connectedPlayers);
-	
-	// socket.emit('initSocketSelf', {me:currentSocketPlayer});
 
   	socket.on('input', function(inputData){
   		currentSocketPlayer.inputData = inputData;
   	});
 
+  	socket.on('prod', function(mousePosition){
+  		//TODO PROD CREATION
+  		var prod = new prod(id, mousePosition);
+
+  	});
+
 	socket.on('disconnect', function(){
 		console.log(id + 'disconnected');
+		for (var i = connectedPlayers.length - 1; i >= 0; i--) {
+			if (connectedPlayers[i].id == id) {
+				connectedPlayers.splice(i,1);
+			}
+			
+		}
 		io.sockets.emit(id + ' disconnected');
 	});
 });

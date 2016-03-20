@@ -2,40 +2,38 @@ var socket = io();
 
 var connectedPlayers = [];
 var canvas = document.getElementById('canvas');
-console.log(canvas);
-var ctx = canvas.getContext("2d");
+
+var mousePos = {x: 0, y: 0};
+
 var inputKey = {left:false,up:false,right:false,down:false};
 var me = new localPlayer();
 
 
 
-$(function(){
 
- 
+
+$(function(){
+//TODO
+// canvas.onclick = prod;
+
+var canvasOffsetx = getOffset( canvas ).left; 
+var canvasOffsety = getOffset( canvas ).top;  
 	$('#canvas').mousemove(function(e){
 	    mousePos={
-	        x: ((e.clientX)),
-			y: ((e.clientY))
+	        x: ((e.clientX)) - canvasOffsetx,
+			y: ((e.clientY)) - canvasOffsety
 	    };
+	    console.log(mousePos);
 	});
 
 });
+
 socket.on('initRemotePlayers', function(data){
 	connectedPlayers = data;
 	startLoop();
 	
 });
-// socket.on('initSocketSelf', function(data){
-// 	me.init(data);
-	
-// });
 
-//TODO lägg till fler spelare
-// socket.on('addPlayer', function(data){
-
-// });
-
-//TODO lägg till server update
 socket.on('update', function(data){
 	connectedPlayers = data;
 });
@@ -47,19 +45,36 @@ function startLoop(){
 	window.requestAnimationFrame(startLoop);
 }
 
+function mouseClickCanvas(e){
+  socket.emit('prod',{x:mousePos.x,y:mousePos.y});
+}
+
 //=========== RENDER ============
 
 function draw(){
-
+	var ctx = canvas.getContext("2d");
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	//Draw Arena
+	ctx.beginPath();
+  	ctx.arc(400, 400, 300, 0, 2 * Math.PI);
+  	ctx.lineWidth = 5;
+  	ctx.strokeStyle = '#000000';
+  	ctx.stroke();
+  	ctx.closePath();
 
 	for (var i = connectedPlayers.length - 1; i >= 0; i--) {
-		ctx.beginPath();
-		ctx.rect(connectedPlayers[i].x, connectedPlayers[i].y, connectedPlayers[i].width, connectedPlayers[i].height);
 		ctx.fillStyle = connectedPlayers[i].color;
-		ctx.fill();
-		ctx.closePath();
+		ctx.fillRect(connectedPlayers[i].x, connectedPlayers[i].y, connectedPlayers[i].width, connectedPlayers[i].height);
 	}
+
+	var width=15;
+	ctx.beginPath();
+	ctx.fillStyle = "#000000";
+  	ctx.arc(mousePos.x - width/2,mousePos.y - width/2,width/2, 0, 2 * Math.PI);
+  	ctx.fill();
+  	ctx.closePath();
+
+  	
 
 	
 
