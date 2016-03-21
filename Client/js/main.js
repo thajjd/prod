@@ -74,7 +74,7 @@ function draw(){
 	if (typeof prods !== 'undefined' && prods.length > 0) {
 		for (var i = prods.length - 1; i >= 0; i--) {
 			ctx.fillStyle = prods[i].color;
-			ctx.fillRect(prods[i].x, prods[i].y, prods[i].width, prods[i].height);
+			ctx.fillRect(prods[i].currentPos.x, prods[i].currentPos.y, prods[i].width, prods[i].height);
 		}
 	}
 	

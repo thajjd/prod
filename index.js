@@ -11,6 +11,7 @@ var ID = require('./js/id.js');
 //resources
 var player=require('./js/player.js').player;
 var prod=require('./js/prod.js').prod;
+var helper=require('./js/helperFunctions.js');
 
 //Server variables
 var connectedPlayers = [];
@@ -67,31 +68,34 @@ function start(){
 }
 
 function physicsLoop(){
+
+	//TODO Delta shit
+	newTime = now();
+	lastFrameTime = isNaN(newTime-oldTime)?0:newTime-oldTime;
+	oldTime=newTime;
+	var deltaTime= isNaN(lastFrameTime/optimalFramerate)?1: lastFrameTime/optimalFramerate;
+
+	fpsTime+=lastFrameTime;
+	fpsTick++;
+
+	if(fpsTime>1000){
+		console.log( 'Server had '+ fpsTick +' frames last second.');
+		fpsTick=0;
+		fpsTime=0;
+	}
+
 	for (var i = connectedPlayers.length - 1; i >= 0; i--) {
 		connectedPlayers[i].update();
 
 	}
 	if (typeof prods !== 'undefined' && prods.length > 0) {
 		for (var i2 = prods.length - 1; i2 >= 0; i2--) {
-			prods[i2].update();
+			prods[i2].update(deltaTime);
 		}
 	}
 	
 
-	//TODO Delta shit
-	// newTime = now();
-	// lastFrameTime = isNaN(newTime-oldTime)?0:newTime-oldTime;
-	// oldTime=newTime;
-	// var multiplicator= isNaN(lastFrameTime/optimalFramerate)?1: lastFrameTime/optimalFramerate;
-
-	// fpsTime+=lastFrameTime;
-	// fpsTick++;
-
-	// if(fpsTime>1000){
-	// 	console.log( 'Server had '+ fpsTick +' frames last second.');
-	// 	fpsTick=0;
-	// 	fpsTime=0;
-	// }
+	
 }
 function serverUpdateLoop(){
 	io.emit('update', {players:connectedPlayers, prods:prods});
