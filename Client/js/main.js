@@ -8,7 +8,7 @@ var mousePos = {x: 0, y: 0};
 
 var inputKey = {left:false,up:false,right:false,down:false};
 var me = new localPlayer();
-var cursorWidth=15;
+var cursorWidth=10;
 
 
 
@@ -22,8 +22,8 @@ var canvasOffsetx = getOffset( canvas ).left;
 var canvasOffsety = getOffset( canvas ).top;  
 	$('#canvas').mousemove(function(e){
 	    mousePos={
-	        x: ((e.clientX)) - canvasOffsetx,
-			y: ((e.clientY)) - canvasOffsety
+	        x: ((e.clientX)+(cursorWidth/2)) - canvasOffsetx,
+			y: ((e.clientY)+(cursorWidth/2)) - canvasOffsety
 	    };
 	    console.log(mousePos);
 	});
