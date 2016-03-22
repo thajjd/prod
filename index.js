@@ -42,7 +42,7 @@ io.on('connection', function(socket){
   	//Attack
   	socket.on('prod', function(mousePosition){
   		//TODO PROD CREATION
-  		var newProd = new prod(id, mousePosition, currentSocketPlayer.x, currentSocketPlayer.y, currentSocketPlayer.color);
+  		var newProd = new prod(id, mousePosition, currentSocketPlayer.x+(currentSocketPlayer.width/2), currentSocketPlayer.y+(currentSocketPlayer.height/2), currentSocketPlayer.color);
   		prods.push(newProd);
   		console.log("prod created");
 
