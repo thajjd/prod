@@ -17,14 +17,58 @@
 	}
 	body{
 		background-color: rgb(35, 40, 48);
+		color: white;
+	}
+	#game, .match-list {
+		display: none;
+	}
+	#open-room {
+		border: 2px solid white;
+		left: 200px;
+		position: fixed;
+		top: 50px;
+		width: 300px;
+		padding: 10px;
+		display: none;
+	}
+	.room-name {
+		font-weight: bold;
+	}
+	.room-controls, .player-list {
+		margin-top: 40px;
 	}
 	</style>
 </head>
 <body>
-	<h1>PROD</h1>
-	<canvas id="canvas" width="1000" height="800"></canvas>
+	<div id="matchmaking">
+		<div class="name-form">
+			ENTER A REALLY DIRTY FUCKED UP NAME: <input type="text" name="name" /><input type="submit" name="submit-name" value="HOLY SHIT" />
+		</div>
+		<div class="match-list">
+			<span class="matches-msg">LAODING...</span>
+			<p>
+				FUCKING ROOM NAME: <input type="text" name="room-name" />
+				<button class="create-room">CRAETE</button>
+			</p>
+			<div class="room-list"></div>
+		</div>
+		<div id="open-room">
+			<div class="room-name">THIS IS THE ROOM</div>
+			<div class="player-list"></div>
+			<div class="room-controls">
+				<button class="join-room">JOINZ</button>
+				<button class="leave-room" style="display:none">LEAF</button>
+				<button class="ready-room">REDDDY</button>
+			</div>
+		</div>
+	</div>
+	<div id="game">
+		<h1>PROD</h1>
+		<canvas id="canvas" width="1000" height="800"></canvas>
+	</div>
 </body>
 <script type="text/javascript" src="/js/helperFunctions.js"></script>
 <script type="text/javascript" src="/js/localPlayer.js"></script>
 <script type="text/javascript" src="/js/main.js"></script>
+<script type="text/javascript" src="/js/script.js"></script>
 </html>

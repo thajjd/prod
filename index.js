@@ -1,5 +1,6 @@
 var app = require('express')();
 var server = require('http').createServer(app);
+var bodyParser = require('body-parser');
 var io = require('socket.io')(server);
 var fs = require('fs');
 var now = require("performance-now");
@@ -25,6 +26,9 @@ var lastFrameTime;
 var fpsTime = 0;
 var fpsTick = 0;
 var optimalFramerate = 1000/60;
+
+//Rooms
+var rooms = [];
 
 
 io.on('connection', function(socket){
@@ -105,6 +109,11 @@ function serverUpdateLoop(){
 //INITIATE MOTHER FUCKER
 start();
 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({
+  extended: true
+})); 
+
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/Client/index.html');
 });
@@ -114,6 +123,120 @@ app.get('/js/:name', function (req, res) {
   console.log(req.params.name+" sent");
 });
 
+app.get('/rooms', function (req, res) {
+	res.json(rooms);
+})
+
+app.post('/rooms', function(req, res) {
+	rooms.forEach(function(room) {
+		var index = 0;
+
+		room.players.forEach(function(player) {
+			if(player.name == req.body.user) {
+				room.players.splice(index, 1);
+				io.emit('update_room', room);
+			}
+
+			index++;
+		})
+	})
+	
+	var room = {
+		name: req.body.name,
+		players: [{name: req.body.user}]
+	};
+
+	rooms.push(room);
+
+	io.emit('update_room', room);
+
+	res.json(room);
+})
+
+app.get('/room/:name', function(req, res) {
+	rooms.forEach(function(roomObj) {
+		if(roomObj.name == req.params.name) {
+			room = roomObj;
+		}
+	})
+
+	res.json(room);
+})
+
+app.post('/rooms/:op(join|leave|ready)', function(req, res) {
+	var room = false;
+
+	rooms.forEach(function(roomObj) {
+		if(roomObj.name == req.body.name) {
+			room = roomObj;
+		}
+	})
+
+	switch(req.params.op) {
+		case 'join':
+			rooms.forEach(function(roomObj) {
+				var index = 0;
+				var roomPlayers = [];
+
+				roomObj.players.forEach(function(player) {
+					if(player.name == req.body.user) {
+						roomObj.players.splice(index, 1)
+						io.emit('update_room', roomObj);
+					}
+
+					index++;
+				})
+			})
+
+			room.players.push({name: req.body.user});
+
+			io.emit('update_room', room);
+
+			break;
+
+		case 'leave':
+			var index = 0;
+
+			room.players.forEach(function(player) {
+				if(player.name == req.body.user) {
+					room.players.splice(index, 1);
+				}
+
+				index++;
+			})
+
+			io.emit('update_room', room);
+
+			break;
+
+		case 'ready':
+			var countReady = 0;
+
+			room.players.forEach(function(player) {
+				if(player.name == req.body.user) {
+					player.ready = true;
+				}
+
+				if(player.ready) {
+					countReady++;
+				}
+			})
+
+			if(countReady == room.players.length) {
+				startRoom(room);
+			}
+
+			io.emit('update_room', room);
+
+			break;
+	}
+
+	res.json(room);
+})
+
+function startRoom(room) {
+	console.log("FUCKING START THIS SHIT: ", room);
+}
 
 server.listen(3000, function(){
   console.log('listening on *:3000');
