@@ -1,4 +1,5 @@
-var BASE_URL = '';
+
+var BASE_URL = ''; 
 var USER = false;
 var ROOMS = [];
 var OPEN_ROOM = '';
@@ -11,15 +12,16 @@ $(document).ready(function() {
 		renderMatchList();
 
 		return false;
-	})
+	});
 
 	$('.create-room').click(function() {
 		var roomName = $('input[name="room-name"]').val();
 
-		if(roomName != '') {
+		if(roomName !== '') {
 			$.post(BASE_URL + '/rooms', {user: USER, name: roomName}, function(room) {
 				renderRoom(room);
 			});
+			socket.emit('joinGame', {roomName: roomName,playerName: USER});
 		} else {
 			$('.matches-msg').text('YOU DIDNT ENTER A GOD DAMN ROOM NAME WHAT THE FUCK IS WRONG WITH YOU');
 		}
@@ -27,8 +29,8 @@ $(document).ready(function() {
 		
 
 		return false;
-	})
-})
+	});
+});
 
 function renderMatchList() {
 	$('.match-list').show();
@@ -40,7 +42,7 @@ function renderMatchList() {
 			$('.matches-msg').text('');
 			$.each(data, function(index, room) {
 				renderRoomInList(room);
-			})
+			});
 		}
 	});
 }
@@ -57,8 +59,8 @@ function renderRoomInList(room) {
 		template.click(function() {
 			$.get(BASE_URL + '/room/' + room.name, function(room) {
 				renderRoom(room);
-			}) 
-		})
+			}) ;
+		});
 	}
 }
 
@@ -72,9 +74,9 @@ function renderRoom(room) {
 
 	$.each(room.players, function(index, player) {
 		playerNames.push(player.name);
-		var readyText = (player.ready) ? ' - FUCKING READY' : ''
+		var readyText = (player.ready) ? ' - FUCKING READY' : '';
 		$('#open-room .player-list').append('<p>' + player.name + readyText + '</p>');
-	})
+	});
 
 	if(playerNames.indexOf(USER) >= 0) {
 		$('#open-room .join-room').hide();
@@ -86,15 +88,15 @@ function renderRoom(room) {
 
 	$('#open-room .join-room').unbind('click').click(function() {
 		joinRoom(room.name);
-	})
+	});
 
 	$('#open-room .leave-room').unbind('click').click(function() {
 		leaveRoom(room.name);
-	})
+	});
 
 	$('#open-room .ready-room').unbind('click').click(function() {
 		readyRoom(room.name);
-	})
+	});
 
 	$('#open-room').show();
 }
@@ -103,14 +105,20 @@ function joinRoom(name) {
 	$.post(BASE_URL + '/rooms/join', {user: USER, name: name}, function(room) {
 		renderMatchList();
 		renderRoom(room);
+		
 	});
+	socket.emit('joinGame', {roomName: name,playerName: USER});
+	
 }
 
 function leaveRoom(name) {
 	$.post(BASE_URL + '/rooms/leave', {user: USER, name: name}, function(room) {
 		renderMatchList();
 		renderRoom(room);
+		
 	});
+	socket.emit('leaveGame', {roomName: name,playerName: USER});
+	
 }
 
 function readyRoom(name) {
@@ -128,4 +136,4 @@ socket.on('update_room', function(room) {
 			renderRoom(room);
 		}
 	}
-})
+});

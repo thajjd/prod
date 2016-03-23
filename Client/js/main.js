@@ -1,4 +1,4 @@
-var socket = io();
+
 
 var connectedPlayers = [];
 var prods = [];
@@ -7,38 +7,31 @@ var canvas = document.getElementById('canvas');
 var mousePos = {x: 0, y: 0};
 
 var inputKey = {left:false,up:false,right:false,down:false};
-var me = new localPlayer();
 var cursorWidth=10;
 
 
 
 
 
-$(function(){
 
-canvas.onclick = mouseClickCanvas;
-
-var canvasOffsetx = getOffset( canvas ).left; 
-var canvasOffsety = getOffset( canvas ).top;  
-	$('#canvas').mousemove(function(e){
-	    mousePos={
-	        x: ((e.clientX)+(cursorWidth/2)) - canvasOffsetx,
-			y: ((e.clientY)+(cursorWidth/2)) - canvasOffsety
-	    };
-	    console.log(mousePos);
-	});
-
-});
 
 socket.on('initRemotePlayers', function(data){
 	connectedPlayers = data;
-	startLoop();
+	
 	
 });
 
 socket.on('update', function(data){
 	connectedPlayers = data.players;
 	prods = data.prods;
+});
+socket.on('initGame', function(data){
+	console.log('Starting Game ...');
+	$('#matchmaking').hide();
+	$('#game').show();
+	activateMouseInput();
+	activateGameInput();
+	startLoop();
 });
 
 function startLoop(){
@@ -94,25 +87,45 @@ function draw(){
 
 
 //=========== end of RENDER ============
+function activateMouseInput(){
+	$(function(){
+
+	canvas.onclick = mouseClickCanvas;
+
+	var canvasOffsetx = getOffset( canvas ).left; 
+	var canvasOffsety = getOffset( canvas ).top;  
+		$('#canvas').mousemove(function(e){
+		    mousePos={
+		        x: ((e.clientX)+(cursorWidth/2)) - canvasOffsetx,
+				y: ((e.clientY)+(cursorWidth/2)) - canvasOffsety
+		    };
+		    console.log(mousePos);
+		});
+
+	});
+}
 
 //=========== INPUT =============
-window.addEventListener("keydown", function(e) {
-    // space and wasd keys
+function activateGameInput(){
+	window.addEventListener("keydown", function(e) {
+	    // space and wasd keys
 
-    if([83, 87, 65, 68, 32].indexOf(e.keyCode) > -1) {
-        e.preventDefault();
-        keydown(e);
-    }
-}, false);
+	    if([83, 87, 65, 68, 32].indexOf(e.keyCode) > -1) {
+	        e.preventDefault();
+	        keydown(e);
+	    }
+	}, false);
 
-window.addEventListener("keyup", function(e) {
-    // space and wasd keys
+	window.addEventListener("keyup", function(e) {
+	    // space and wasd keys
 
-    if([83, 87, 65, 68, 32].indexOf(e.keyCode) > -1) {
-        e.preventDefault();
-        keyup(e);
-    }
-}, false);
+	    if([83, 87, 65, 68, 32].indexOf(e.keyCode) > -1) {
+	        e.preventDefault();
+	        keyup(e);
+	    }
+	}, false);
+}
+
 
 function keydown(e){
 if (e.keyCode==65)
@@ -138,7 +151,3 @@ else if (e.keyCode==83)
 socket.emit('input',inputKey);
 }
 //=========== End of INPUT =========
-
-socket.on('thecolor', function(data){
-	console.log(data);
-});

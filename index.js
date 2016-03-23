@@ -35,45 +35,57 @@ io.on('connection', function(socket){
 	var id=ID.id();
   	console.log('a '+id+' connected ');
 
-  	var currentSocketPlayer = new player(id);
-  	connectedPlayers.push(currentSocketPlayer);
-	socket.emit('initRemotePlayers', connectedPlayers);
+  	socket.on('joinGame', function(data){
+  		var currentSocketPlayer = new player(id, data.playerName);
 
-  	socket.on('input', function(inputData){
-  		currentSocketPlayer.inputData = inputData;
-  	});
+  		connectedPlayers.push(currentSocketPlayer);
 
-  	//Attack
-  	socket.on('prod', function(mousePosition){
-  		//TODO PROD CREATION
-  		var newProd = new prod(id, mousePosition, currentSocketPlayer.x+(currentSocketPlayer.width/2), currentSocketPlayer.y+(currentSocketPlayer.height/2), currentSocketPlayer.color);
-  		prods.push(newProd);
-  		console.log("prod created");
+  		socket.join(data.roomName);
 
-  	});
+  		socket.on('leaveGame', function(data){
+	  		socket.leave(data.roomName);
+	  	});
 
-	socket.on('disconnect', function(){
-		console.log(id + 'disconnected');
-		for (var i = connectedPlayers.length - 1; i >= 0; i--) {
-			if (connectedPlayers[i].id == id) {
-				connectedPlayers.splice(i,1);
+	  	
+	  	
+		socket.emit('initRemotePlayers', connectedPlayers);
+
+	  	socket.on('input', function(inputData){
+	  		currentSocketPlayer.inputData = inputData;
+	  	});
+
+	  	//Attack
+	  	socket.on('prod', function(mousePosition){
+	  		//TODO PROD CREATION
+	  		var newProd = new prod(id, mousePosition, currentSocketPlayer.x+(currentSocketPlayer.width/2), currentSocketPlayer.y+(currentSocketPlayer.height/2), currentSocketPlayer.color);
+	  		prods.push(newProd);
+	  		console.log("prod created");
+
+	  	});
+
+		socket.on('disconnect', function(){
+			console.log(id + 'disconnected');
+			for (var i = connectedPlayers.length - 1; i >= 0; i--) {
+				if (connectedPlayers[i].id == id) {
+					connectedPlayers.splice(i,1);
+				}
+				
 			}
-			
-		}
-		io.sockets.emit(id + ' disconnected');
-	});
+			io.sockets.emit(id + ' disconnected');
+		});
+  	});
+  	
 });
 
 
 
-function start(){
-	setInterval(physicsLoop, physicsLoopIntervall);
-	setInterval(serverUpdateLoop, serverUpdateLoopIntervall);
+function start(roomData){
+	setInterval(physicsLoop, physicsLoopIntervall, roomData);
+	setInterval(serverUpdateLoop, serverUpdateLoopIntervall, roomData);
 }
 
-function physicsLoop(){
+function physicsLoop(roomData){
 
-	//TODO Delta shit
 	newTime = now();
 	lastFrameTime = isNaN(newTime-oldTime)?0:newTime-oldTime;
 	oldTime=newTime;
@@ -83,13 +95,13 @@ function physicsLoop(){
 	fpsTick++;
 
 	if(fpsTime>1000){
-		console.log( 'Server had '+ fpsTick +' frames last second.');
+		// console.log( 'Server had '+ fpsTick +' frames last second.');
 		fpsTick=0;
 		fpsTime=0;
 	}
 
 	for (var i = connectedPlayers.length - 1; i >= 0; i--) {
-		connectedPlayers[i].update();
+		connectedPlayers[i].update(deltaTime);
 
 	}
 	if (typeof prods !== 'undefined' && prods.length > 0) {
@@ -101,13 +113,19 @@ function physicsLoop(){
 
 	
 }
-function serverUpdateLoop(){
-	io.emit('update', {players:connectedPlayers, prods:prods});
+function serverUpdateLoop(roomData){
+	io.to(roomData.name).emit('update', {players:connectedPlayers, prods:prods});
 
 }
 
+function startRoom(roomData) {
+	console.log("FUCKING START THIS SHIT: ", roomData);
+	io.to(roomData.name).emit('initGame', roomData);
+	start(roomData);
+}
+
 //INITIATE MOTHER FUCKER
-start();
+
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
@@ -125,7 +143,7 @@ app.get('/js/:name', function (req, res) {
 
 app.get('/rooms', function (req, res) {
 	res.json(rooms);
-})
+});
 
 app.post('/rooms', function(req, res) {
 	rooms.forEach(function(room) {
@@ -138,8 +156,8 @@ app.post('/rooms', function(req, res) {
 			}
 
 			index++;
-		})
-	})
+		});
+	});
 	
 	var room = {
 		name: req.body.name,
@@ -151,17 +169,17 @@ app.post('/rooms', function(req, res) {
 	io.emit('update_room', room);
 
 	res.json(room);
-})
+});
 
 app.get('/room/:name', function(req, res) {
 	rooms.forEach(function(roomObj) {
 		if(roomObj.name == req.params.name) {
 			room = roomObj;
 		}
-	})
+	});
 
 	res.json(room);
-})
+});
 
 app.post('/rooms/:op(join|leave|ready)', function(req, res) {
 	var room = false;
@@ -170,7 +188,7 @@ app.post('/rooms/:op(join|leave|ready)', function(req, res) {
 		if(roomObj.name == req.body.name) {
 			room = roomObj;
 		}
-	})
+	});
 
 	switch(req.params.op) {
 		case 'join':
@@ -180,13 +198,14 @@ app.post('/rooms/:op(join|leave|ready)', function(req, res) {
 
 				roomObj.players.forEach(function(player) {
 					if(player.name == req.body.user) {
-						roomObj.players.splice(index, 1)
+						roomObj.players.splice(index, 1);
+						console.log(player);
 						io.emit('update_room', roomObj);
 					}
 
 					index++;
-				})
-			})
+				});
+			});
 
 			room.players.push({name: req.body.user});
 
@@ -203,7 +222,7 @@ app.post('/rooms/:op(join|leave|ready)', function(req, res) {
 				}
 
 				index++;
-			})
+			});
 
 			io.emit('update_room', room);
 
@@ -213,6 +232,7 @@ app.post('/rooms/:op(join|leave|ready)', function(req, res) {
 			var countReady = 0;
 
 			room.players.forEach(function(player) {
+
 				if(player.name == req.body.user) {
 					player.ready = true;
 				}
@@ -220,7 +240,7 @@ app.post('/rooms/:op(join|leave|ready)', function(req, res) {
 				if(player.ready) {
 					countReady++;
 				}
-			})
+			});
 
 			if(countReady == room.players.length) {
 				startRoom(room);
@@ -232,11 +252,8 @@ app.post('/rooms/:op(join|leave|ready)', function(req, res) {
 	}
 
 	res.json(room);
-})
+});
 
-function startRoom(room) {
-	console.log("FUCKING START THIS SHIT: ", room);
-}
 
 server.listen(3000, function(){
   console.log('listening on *:3000');

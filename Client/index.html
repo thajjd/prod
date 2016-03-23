@@ -11,6 +11,9 @@
 		border: solid 1px #000;
 		background-color: #fff;
 		cursor: none !important;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		user-select: none;
 	}
 	h1{
 		color: #fff;
@@ -67,6 +70,9 @@
 		<canvas id="canvas" width="1000" height="800"></canvas>
 	</div>
 </body>
+<script>
+	var socket = io();
+</script>
 <script type="text/javascript" src="/js/helperFunctions.js"></script>
 <script type="text/javascript" src="/js/localPlayer.js"></script>
 <script type="text/javascript" src="/js/main.js"></script>
