@@ -60,14 +60,20 @@ function draw(){
   	ctx.closePath();
 
 	for (var i = connectedPlayers.length - 1; i >= 0; i--) {
+		ctx.beginPath();
 		ctx.fillStyle = connectedPlayers[i].color;
-		ctx.fillRect(connectedPlayers[i].x, connectedPlayers[i].y, connectedPlayers[i].width, connectedPlayers[i].height);
+		ctx.arc(connectedPlayers[i].x, connectedPlayers[i].y, connectedPlayers[i].width, 0, 2 * Math.PI);
+		ctx.fill();
+		ctx.closePath();
 	}
 
 	if (typeof prods !== 'undefined' && prods.length > 0) {
 		for (var i = prods.length - 1; i >= 0; i--) {
+			ctx.beginPath();
 			ctx.fillStyle = prods[i].color;
-			ctx.fillRect(prods[i].currentPos.x, prods[i].currentPos.y, prods[i].width, prods[i].height);
+			ctx.arc(prods[i].currentPos.x, prods[i].currentPos.y, prods[i].width, 0, 2*Math.PI);
+			ctx.fill();
+			ctx.closePath();
 		}
 	}
 	

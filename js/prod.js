@@ -6,8 +6,8 @@ var prod = function (creatorID, targetPos, currentPlayerPosX, currentPlayerPosY,
 	
 	this.speed = 5;
 	this.creator = creatorID;
-	this.width = 30;
-	this.height = 30;
+	this.width = 15;
+	this.height = 15;
 	// targetPos = correctAim(targetPos);
 	this.currentPos= {x:currentPlayerPosX-(this.width/2),y:currentPlayerPosY-(this.width/2)};
 	this.targetPos = {x:targetPos.x-(this.width/2),y:targetPos.y-(this.height/2)}; //x and y clicked on map

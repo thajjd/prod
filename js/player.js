@@ -3,6 +3,8 @@ var speed = 2;
 
 var player = function (id, name){
 	this.id = id;
+	this.width = 20;
+	this.height = 20;
 	this.color = randomColor();
 	this.x = 30;
 	this.y = 30;
@@ -14,8 +16,7 @@ var player = function (id, name){
 	this.xvel=0;
   	this.yvel=0;
 	this.inputData={left:false,up:false,right:false,down:false};
-	this.width = 40;
-	this.height = 40;
+	
 
 	this.update = function(deltaTime){
 		//TODO VELOCITY MOVEMENT
