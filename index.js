@@ -57,7 +57,7 @@ io.on('connection', function(socket){
 	  	//Attack
 	  	socket.on('prod', function(mousePosition){
 	  		//TODO PROD CREATION
-	  		var newProd = new prod(id, mousePosition, currentSocketPlayer.x+(currentSocketPlayer.width/2), currentSocketPlayer.y+(currentSocketPlayer.height/2), currentSocketPlayer.color);
+	  		var newProd = new prod(id, mousePosition, currentSocketPlayer.x+(currentSocketPlayer.width/2), currentSocketPlayer.y+(currentSocketPlayer.height/2), currentSocketPlayer.color, now());
 	  		prods.push(newProd);
 	  		console.log("prod created");
 
@@ -105,8 +105,89 @@ function physicsLoop(roomData){
 
 	}
 	if (typeof prods !== 'undefined' && prods.length > 0) {
-		for (var i2 = prods.length - 1; i2 >= 0; i2--) {
-			prods[i2].update(deltaTime);
+		for (var i = prods.length - 1; i >= 0; i--) {
+			prods[i].update(deltaTime);
+
+			
+				
+			//Dig a prod collide with a prod?
+			for (var j = prods.length - 1; j >= 0; j--) {
+				var a = prods[i];
+				var b = prods[j];
+
+				if(i != j && a.creator != b.creator){
+					//d=distance,c=collision
+					var dx = a.currentPos.x - b.currentPos.x;
+					var dy = a.currentPos.y - b.currentPos.y;
+					var d2 = dx * dx + dy * dy;
+					if(d2 <= ((a.width + b.width) * (a.width + b.width))){
+						var dotProduct = dx * (b.normalized.x - a.normalized.x) + dy * (b.normalized.y - a.normalized.y);
+						if(dotProduct > 0){
+							var cScale = dotProduct / d2;
+							var cX = dx * cScale;
+							var cY = dy * cScale;
+							var massTotal = a.width + b.width;
+							var cWeightA = 2 * b.width / massTotal;
+							var cWeightB = 2 * a.width / massTotal;
+							a.normalized.x += (cWeightA * cX);
+							a.normalized.y += (cWeightA * cY);
+							b.normalized.x -= (cWeightB * cX);
+							b.normalized.y -= (cWeightB * cY);
+						}
+
+						console.log("prod - prod collision");
+						prods.splice(i, 1);
+						prods.splice(j, 1);
+					}
+				}
+			}
+
+			for (var j = connectedPlayers.length - 1; j >= 0; j--) {
+				if (prods[i] != undefined) {
+					var a = prods[i];
+					var b = connectedPlayers[j];
+
+					if(a.creator != b.id){
+						//d=distance,c=collision
+						var dx = a.currentPos.x - b.x;
+						var dy = a.currentPos.y - b.y;
+						var d2 = dx * dx + dy * dy;
+						if(d2 <= ((a.width + b.width) * (a.width + b.width))){
+							//TODO What happens when prod collides with player
+							// var dotProduct = dx * (b.normalized.x - a.normalized.x) + dy * (b.normalized.y - a.normalized.y);
+							// if(dotProduct > 0){
+							// 	var cScale = dotProduct / d2;
+							// 	var cX = dx * cScale;
+							// 	var cY = dy * cScale;
+							// 	var massTotal = a.width + b.width;
+							// 	var cWeightA = 2 * b.width / massTotal;
+							// 	var cWeightB = 2 * a.width / massTotal;
+							// 	a.normalized.x += (cWeightA * cX);
+							// 	a.normalized.y += (cWeightA * cY);
+							// 	b.normalized.x -= (cWeightB * cX);
+							// 	b.normalized.y -= (cWeightB * cY);
+							// }
+
+							console.log("Player - prod collision");
+							prods.splice(i, 1);
+						}
+					}
+				}
+				
+			}
+			
+
+			//Check if TTL has passed
+			if (prods[i] != undefined) {
+				if (now() - prods[i].timeCreated > prods[i].ttl) {
+				
+					console.log('prod created: ' + prods[i].timeCreated);
+					console.log('prod destroyed: ' + now());
+					prods.splice(i, 1);
+				}
+				
+			}
+			
 		}
 	}
 	
@@ -135,6 +216,30 @@ app.use(bodyParser.urlencoded({
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/Client/index.html');
 });
+
+// app.get('/:name', function (req, res, next) {
+
+//   var options = {
+//     root: __dirname + '/',
+//     dotfiles: 'allow',
+//     headers: {
+//         'x-timestamp': Date.now(),
+//         'x-sent': true
+//     }
+//   };
+
+//   var fileName = req.params.name;
+//   res.sendFile(fileName, options, function (err) {
+//     if (err) {
+//       console.log(err);
+//       res.status(err.status).end();
+//     }
+//     else {
+//       console.log('Sent:', fileName);
+//     }
+//   });
+
+// });
 
 app.get('/js/:name', function (req, res) {
   res.sendFile(__dirname+"/Client/js/"+req.params.name);

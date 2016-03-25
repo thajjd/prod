@@ -1,0 +1,195 @@
+<html>
+	<head>
+		<title></title>
+		<meta http-equiv="X-UA-Compatible" content="chrome=1">
+		<style type="text/css">
+			* {
+				margin: 0px;
+				padding: 0px;
+			}
+			
+			html, body {
+				width: 100%;
+				height: 100%;
+			}
+		</style>
+		<script type="text/javascript">
+			Array.prototype.contains = function(item){
+				for(var i = 0; i < this.length; i++){
+					if(this[i] == item){
+						return true;
+					}
+				}
+				return false;
+			}
+		
+			var Bubble = {
+				canvas: null,
+				context: null,
+				width: null,
+				height: null,
+				bubbles: new Array(),
+				interval: null,
+				
+				init: function(canvas){
+					Bubble.bubbles = new Array();
+					Bubble.canvas = canvas;
+					Bubble.context = canvas.getContext('2d');
+					Bubble.width = canvas.width;
+					Bubble.height = canvas.height;
+					window.clearInterval(Bubble.interval);
+					
+					
+					for(var i = 0; i < 30; i++){
+						
+						var bubble = new Object;
+						bubble.size = Math.ceil(Math.random()*3) * 10;
+
+						bubble.x = Math.floor(Math.random()*(Bubble.width-2*bubble.size))+bubble.size;
+						bubble.y = Math.floor(Math.random()*(Bubble.height-2*bubble.size))+bubble.size;
+
+						bubble.dirX = Math.random()*5;
+						bubble.dirY = Math.random()*5;
+
+						bubble.colorValue = new Array();
+						bubble.colorDir = new Array();
+						bubble.colorValue[1] = Math.floor(Math.random()*150)+50;
+						bubble.colorValue[2] = Math.floor(Math.random()*150)+50;
+						bubble.colorValue[3] = Math.floor(Math.random()*150)+50;
+						bubble.colorDir[1] = Math.ceil(Math.random()*2);
+						bubble.colorDir[2] = Math.ceil(Math.random()*2);
+						bubble.colorDir[3] = Math.ceil(Math.random()*2);
+					
+						bubble.toColor = function(){
+							return this.colorValue[1]+","+this.colorValue[2]+","+this.colorValue[3];
+						}
+
+						bubble.changeColor = function(){
+							for(var c = 1; c <= 3; c++){
+								this.colorValue[c] += this.colorDir[c];
+								if(this.colorValue[c] >= 200 || this.colorValue[c] <= 50){
+									this.colorDir[c] = -(this.colorDir[c]);
+								}
+							}
+						}
+
+						bubble.move = function(){
+							this.x += this.dirX;
+							this.y += this.dirY;
+							if(this.x <= this.size || this.x >= Bubble.width-this.size){this.dirX = -(this.dirX); this.x = (this.x <= this.size) ? this.size : Bubble.width - this.size;}
+							if(this.y <= this.size || this.y >= Bubble.height-this.size){this.dirY = -(this.dirY); this.y = (this.y <= this.size) ? this.size : Bubble.height - this.size;}
+						}
+						
+						bubble.collidedWith = new Array();
+
+						Bubble.bubbles.push(bubble);
+					}
+					
+					
+					Bubble.interval = window.setInterval("Bubble.run()", 33);
+					
+				},
+				
+				run: function(){
+					Bubble.update();
+					Bubble.render();
+					
+				},
+				
+				update: function(){
+					for(var i = 0; i < Bubble.bubbles.length; i++){
+						Bubble.bubbles[i].collidedWith = new Array();
+					}
+				
+					for(var i = 0; i < Bubble.bubbles.length; i++){
+					
+						Bubble.bubbles[i].changeColor();
+						Bubble.bubbles[i].move();
+						
+						//Check for collisions
+						for(var j = 0; j < Bubble.bubbles.length; j++){
+							var a = Bubble.bubbles[i];
+							var b = Bubble.bubbles[j];
+							if(i != j && !a.collidedWith.contains(j)){
+								//d=distance,c=collision
+								var dx = a.x - b.x;
+								var dy = a.y - b.y;
+								var d2 = dx * dx + dy * dy;
+								if(d2 <= ((a.size + b.size) * (a.size + b.size))){
+									var dotProduct = dx * (b.dirX - a.dirX) + dy * (b.dirY - a.dirY);
+									if(dotProduct > 0){
+										var cScale = dotProduct / d2;
+										var cX = dx * cScale;
+										var cY = dy * cScale;
+										var massTotal = a.size + b.size;
+										var cWeightA = 2 * b.size / massTotal;
+										var cWeightB = 2 * a.size / massTotal;
+										a.dirX += (cWeightA * cX);
+										a.dirY += (cWeightA * cY);
+										b.dirX -= (cWeightB * cX);
+										b.dirY -= (cWeightB * cY);
+									}
+									
+									a.collidedWith.push(j);
+									b.collidedWith.push(i);
+								}
+							}
+						}
+						
+					}
+				},
+				
+				render: function(){
+					Bubble.context.save();
+					Bubble.context.fillStyle = '#000000';
+					Bubble.context.fillRect(0, 0, Bubble.width, Bubble.height);
+
+					for(var i = 0; i < Bubble.bubbles.length; i++){
+						Bubble.context.save();
+						Bubble.context.fillStyle = "rgba("+Bubble.bubbles[i].toColor()+",0.25)"
+						Bubble.context.lineWidth = 2;
+						Bubble.context.beginPath();
+						Bubble.context.arc(Bubble.bubbles[i].x, Bubble.bubbles[i].y, Bubble.bubbles[i].size, 0, Math.PI*2, true);
+						Bubble.context.closePath();
+						Bubble.context.fill();
+						Bubble.context.strokeStyle = "rgba("+Bubble.bubbles[i].toColor()+",1)"
+						Bubble.context.stroke();
+						Bubble.context.restore();
+					}
+					Bubble.context.restore();
+				}
+			};
+
+			window.onload = function(){
+				fullsize();
+			}
+			
+			function fullsize(){
+				var width = 0, height = 0;
+				if(typeof(window.innerWidth ) == 'number'){
+					//Non-IE
+					width = window.innerWidth;
+					height = window.innerHeight;
+				}
+				else if(document.documentElement && (document.documentElement.clientWidth || document.documentElement.clientHeight)){
+					//IE 6+ in 'standards compliant mode'
+					width = document.documentElement.clientWidth;
+					height = document.documentElement.clientHeight;
+				}
+				else if(document.body && (document.body.clientWidth || document.body.clientHeight)){
+					//IE 4 compatible
+					width = document.body.clientWidth;
+					height = document.body.clientHeight;
+				}
+				
+				document.getElementById('canvas').width = width;
+				document.getElementById('canvas').height = height;
+				Bubble.init(document.getElementById('canvas'));
+			}
+		</script>
+	
+	</head>
+	<body onclick="fullsize()">
+		<canvas id="canvas" width="500" height="500"></canvas>
+	</body>
+</html>

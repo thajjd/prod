@@ -1,13 +1,15 @@
 
 var helper=require('./helperFunctions.js');
 
-var prod = function (creatorID, targetPos, currentPlayerPosX, currentPlayerPosY, playerColor){
+var prod = function (creatorID, targetPos, currentPlayerPosX, currentPlayerPosY, playerColor, timeCreated){
 
 	
 	this.speed = 5;
 	this.creator = creatorID;
 	this.width = 15;
 	this.height = 15;
+	this.ttl = 1500;
+	this.timeCreated = timeCreated;
 	// targetPos = correctAim(targetPos);
 	this.currentPos= {x:currentPlayerPosX-(this.width/2),y:currentPlayerPosY-(this.width/2)};
 	this.targetPos = {x:targetPos.x-(this.width/2),y:targetPos.y-(this.height/2)}; //x and y clicked on map
@@ -21,7 +23,6 @@ var prod = function (creatorID, targetPos, currentPlayerPosX, currentPlayerPosY,
 
 
 	this.update = function(deltaTime){
-		
 		this.currentPos.x += this.normalized.x*deltaTime*this.speed;
 		this.currentPos.y += this.normalized.y*deltaTime*this.speed;
 	};

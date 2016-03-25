@@ -1,13 +1,24 @@
 var speed = 2;
 
+var spawnradius = 150;
+
+
 
 var player = function (id, name){
 	this.id = id;
 	this.width = 20;
 	this.height = 20;
 	this.color = randomColor();
-	this.x = 30;
-	this.y = 30;
+
+	var spawnx = Math.random() * 2 * spawnradius - spawnradius;
+	var ylim = Math.sqrt(spawnradius * spawnradius - spawnx * spawnx);
+	var spawny = Math.random() * 2 * ylim - ylim;
+
+	// Offset so that the circle is all on the screen   
+	spawnx += 400;
+	spawny += 400;
+	this.x = spawnx;
+	this.y = spawny;
 	this.name = name;
 
 	this.hp=100;
