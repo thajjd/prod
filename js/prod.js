@@ -4,10 +4,11 @@ var helper=require('./helperFunctions.js');
 var prod = function (creatorID, targetPos, currentPlayerPosX, currentPlayerPosY, playerColor, timeCreated){
 
 	
-	this.speed = 5;
+	this.speed = 8;
 	this.creator = creatorID;
 	this.width = 15;
 	this.height = 15;
+	this.dmg = 100;
 	this.ttl = 1500;
 	this.timeCreated = timeCreated;
 	// targetPos = correctAim(targetPos);
@@ -17,9 +18,9 @@ var prod = function (creatorID, targetPos, currentPlayerPosX, currentPlayerPosY,
 	this.normalized = helper.normalize(this.distance);
 	
 	this.color = playerColor;
-	this.dmg = 5;
+	
 	this.prodId;
-	this.knockbackPower = 3;
+	this.knockbackPower = 10;
 
 
 	this.update = function(deltaTime){

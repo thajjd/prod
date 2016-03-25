@@ -33,6 +33,9 @@ socket.on('initGame', function(data){
 	activateGameInput();
 	startLoop();
 });
+socket.on('playerDeath', function(data){
+	$('#stats').append("<p>" + data + "</p>");
+});
 
 function startLoop(){
 
@@ -63,6 +66,18 @@ function draw(){
 		ctx.beginPath();
 		ctx.fillStyle = connectedPlayers[i].color;
 		ctx.arc(connectedPlayers[i].x, connectedPlayers[i].y, connectedPlayers[i].width, 0, 2 * Math.PI);
+		ctx.fill();
+		ctx.closePath();
+
+		ctx.beginPath();
+		ctx.rect( connectedPlayers[i].x - 27, connectedPlayers[i].y - 42 , 54, 10 );
+		ctx.fillStyle = "#000000";
+		ctx.fill();
+		ctx.closePath();
+
+		ctx.beginPath();
+		ctx.rect( connectedPlayers[i].x - 25, connectedPlayers[i].y - 40 , 50 - ((100  - connectedPlayers[i].hp) /2)  , 6 );
+		ctx.fillStyle = "#00F900";
 		ctx.fill();
 		ctx.closePath();
 	}

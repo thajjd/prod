@@ -14,6 +14,7 @@
 		-webkit-user-select: none;
 		-moz-user-select: none;
 		user-select: none;
+		float: left;
 	}
 	h1{
 		color: #fff;
@@ -24,6 +25,11 @@
 	}
 	#game, .match-list {
 		display: none;
+	}
+	#stats{
+		display: none;
+		width: 200px;
+		float: left;
 	}
 	#open-room {
 		border: 2px solid white;
@@ -68,6 +74,9 @@
 	<div id="game">
 		<h1>PROD</h1>
 		<canvas id="canvas" width="1000" height="800"></canvas>
+	</div>
+	<div id="stats">
+		<h2>Fucking stats</h2>
 	</div>
 </body>
 <script>

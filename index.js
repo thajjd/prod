@@ -2,11 +2,7 @@ var app = require('express')();
 var server = require('http').createServer(app);
 var bodyParser = require('body-parser');
 var io = require('socket.io')(server);
-var fs = require('fs');
 var now = require("performance-now");
-
-var physicsLoopIntervall = 1000/66;
-var serverUpdateLoopIntervall = 1000/22;
 var ID = require('./js/id.js');
 
 //resources
@@ -17,9 +13,9 @@ var helper=require('./js/helperFunctions.js');
 //Server variables
 var connectedPlayers = [];
 var prods = [];
-var lastPlayerStates = [];
-var currentPlayersStates = [];
 
+var physicsLoopIntervall = 1000/66;
+var serverUpdateLoopIntervall = 1000/22;
 var newTime;
 var oldTime;
 var lastFrameTime;
@@ -36,9 +32,9 @@ io.on('connection', function(socket){
   	console.log('a '+id+' connected ');
 
   	socket.on('joinGame', function(data){
-  		var currentSocketPlayer = new player(id, data.playerName);
+  		var thisplr = new player(id, data.playerName);
 
-  		connectedPlayers.push(currentSocketPlayer);
+  		connectedPlayers.push(thisplr);
 
   		socket.join(data.roomName);
 
@@ -51,15 +47,18 @@ io.on('connection', function(socket){
 		socket.emit('initRemotePlayers', connectedPlayers);
 
 	  	socket.on('input', function(inputData){
-	  		currentSocketPlayer.inputData = inputData;
+	  		thisplr.inputData = inputData;
 	  	});
 
 	  	//Attack
 	  	socket.on('prod', function(mousePosition){
-	  		//TODO PROD CREATION
-	  		var newProd = new prod(id, mousePosition, currentSocketPlayer.x+(currentSocketPlayer.width/2), currentSocketPlayer.y+(currentSocketPlayer.height/2), currentSocketPlayer.color, now());
-	  		prods.push(newProd);
-	  		console.log("prod created");
+	  		if (now() - thisplr.lastCastProd >= thisplr.prodCooldown ) {
+				var newProd = new prod(id, mousePosition, thisplr.x+(thisplr.width/2), thisplr.y+(thisplr.height/2), thisplr.color, now());
+				thisplr.lastCastProd = now();
+				prods.push(newProd);
+				console.log("prod created");
+	  		}
+	  		
 
 	  	});
 
@@ -114,47 +113,16 @@ function physicsLoop(roomData){
 			for (var j = prods.length - 1; j >= 0; j--) {
 				var a = prods[i];
 				var b = prods[j];
-
-				if(i != j && a.creator != b.creator){
-					//d=distance,c=collision
-					var dx = a.currentPos.x - b.currentPos.x;
-					var dy = a.currentPos.y - b.currentPos.y;
-					var d2 = dx * dx + dy * dy;
-					if(d2 <= ((a.width + b.width) * (a.width + b.width))){
-						var dotProduct = dx * (b.normalized.x - a.normalized.x) + dy * (b.normalized.y - a.normalized.y);
-						if(dotProduct > 0){
-							var cScale = dotProduct / d2;
-							var cX = dx * cScale;
-							var cY = dy * cScale;
-							var massTotal = a.width + b.width;
-							var cWeightA = 2 * b.width / massTotal;
-							var cWeightB = 2 * a.width / massTotal;
-							a.normalized.x += (cWeightA * cX);
-							a.normalized.y += (cWeightA * cY);
-							b.normalized.x -= (cWeightB * cX);
-							b.normalized.y -= (cWeightB * cY);
-						}
-
-						console.log("prod - prod collision");
-						prods.splice(i, 1);
-						prods.splice(j, 1);
-					}
-				}
-			}
-
-			for (var j = connectedPlayers.length - 1; j >= 0; j--) {
-				if (prods[i] != undefined) {
-					var a = prods[i];
-					var b = connectedPlayers[j];
-
-					if(a.creator != b.id){
+				if (prod[j] != undefined) {
+					if(i != j && a.creator != b.creator){
 						//d=distance,c=collision
-						var dx = a.currentPos.x - b.x;
-						var dy = a.currentPos.y - b.y;
+						var dx = a.currentPos.x - b.currentPos.x;
+						var dy = a.currentPos.y - b.currentPos.y;
 						var d2 = dx * dx + dy * dy;
 						if(d2 <= ((a.width + b.width) * (a.width + b.width))){
-							//TODO What happens when prod collides with player
-							// var dotProduct = dx * (b.normalized.x - a.normalized.x) + dy * (b.normalized.y - a.normalized.y);
+							var dotProduct = dx * (b.normalized.x - a.normalized.x) + dy * (b.normalized.y - a.normalized.y);
+							
+							//Want shit to bounce of eachother, this is it!
 							// if(dotProduct > 0){
 							// 	var cScale = dotProduct / d2;
 							// 	var cX = dx * cScale;
@@ -168,10 +136,60 @@ function physicsLoop(roomData){
 							// 	b.normalized.y -= (cWeightB * cY);
 							// }
 
-							console.log("Player - prod collision");
+							console.log("prod - prod collision");
 							prods.splice(i, 1);
+							prods.splice(j, 1);
 						}
 					}
+				}
+				
+			}
+
+			for (var j = connectedPlayers.length - 1; j >= 0; j--) {
+				if (prods[i] != undefined) {
+					var a = prods[i];
+					var b = connectedPlayers[j];
+					if (a.creator != undefined) {
+						if(a.creator != b.id){
+							//d=distance,c=collision
+							var dx = a.currentPos.x - b.x;
+							var dy = a.currentPos.y - b.y;
+							var d2 = dx * dx + dy * dy;
+							if(d2 <= ((a.width + b.width) * (a.width + b.width))){
+								//TODO What happens when prod collides with player
+								// var dotProduct = dx * (0 - a.normalized.x) + dy * (0 - a.normalized.y);
+								// if(dotProduct > 0){
+									// var cScale = dotProduct / d2;
+									// var cX = dx * cScale;
+									// var cY = dy * cScale;
+									// var massTotal = a.width + b.width;
+									// var cWeightA = 2 * b.width / massTotal;
+									// var cWeightB = 2 * a.width / massTotal;
+									var avatarCenter = {x: b.x + (b.width/2), y: b.y +(b.width/2)};
+									var prodCenter = {x: a.currentPos.x + (a.width/2), y: a.currentPos.y + (a.width/2)};
+									var distance = helper.getDistance(avatarCenter, prodCenter);
+									var normalized = helper.normalize(distance);
+									b.currentKnockbackPower = a.knockbackPower;
+									b.knockbackDir.x += normalized.x;
+									b.knockbackDir.y += normalized.y;
+									b.isKnockbacked = true;
+									
+								// }
+
+								console.log("Player - prod collision");
+								prods.splice(i, 1);
+								b.hp -= a.dmg;
+								if (b.hp <= 0) {
+									io.to(roomData.name).emit('playerDeath', connectedPlayers[j].name + " bit the dust, fucking noob...");	
+									connectedPlayers.splice(j, 1);
+								}
+
+							}
+
+						}
+
+					}
+					
 				}
 				
 			}
