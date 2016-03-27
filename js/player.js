@@ -21,6 +21,7 @@ var player = function (id, name){
 	this.x = spawnx;
 	this.y = spawny;
 	this.name = name;
+	this.currentGame;
 
 	//spells
 	this.prodCooldown = 2000;

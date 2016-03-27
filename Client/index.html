@@ -2,11 +2,15 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Prod</title>
+	<title>PROD</title>
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 	<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
 	
 	<style>
+	*{
+		box-sizing: border-box;
+		-webkit-box-sizing: border-box;
+	}
 	canvas{
 		border: solid 1px #000;
 		background-color: #fff;
@@ -33,19 +37,54 @@
 	}
 	#open-room {
 		border: 2px solid white;
-		left: 200px;
+		right: 2%;
 		position: fixed;
 		top: 50px;
-		width: 300px;
-		padding: 10px;
+		width: 65%;
+		min-height: 400px;
 		display: none;
+	}
+	.errorMsg{
+		border: solid 3px tomato;
+		background-color: tomato;
+		padding: 10px;
+		color: white;
+		font-size: 14px;
+		font-weight: bold;
+		display: none;
+	}
+	.room{
+		cursor: pointer;
+		background-color: rgb(35, 40, 48);
+		border: solid 2px #fff;
+		margin-bottom: 5px;
+		padding: 5px;
+	}
+	.room:hover{
+		background-color: #fff;
+		color: rgb(35, 40, 48);
 	}
 	.room-name {
 		font-weight: bold;
+		display: inline-block;
+		text-align: center;
+		border: solid 2px #fff;
+		width: 100%;
 	}
-	.room-controls, .player-list {
+	.player-list {
+		padding: 10px;
+	}
+	.room-controls{
+		margin-bottom: 20px;
 		margin-top: 40px;
+		position: absolute;
+		bottom: 0;
+		padding: 10px;
 	}
+	.room-list{
+		width: 30%;
+	}
+
 	</style>
 </head>
 <body>
@@ -53,6 +92,7 @@
 		<div class="name-form">
 			ENTER A REALLY DIRTY FUCKED UP NAME: <input type="text" name="name" /><input type="submit" name="submit-name" value="HOLY SHIT" />
 		</div>
+		<div class="errorMsg"></div>
 		<div class="match-list">
 			<span class="matches-msg">LAODING...</span>
 			<p>
@@ -62,8 +102,9 @@
 			<div class="room-list"></div>
 		</div>
 		<div id="open-room">
-			<div class="room-name">THIS IS THE ROOM</div>
-			<div class="player-list"></div>
+		
+			<div class="room-name"></div>
+			<div class="player-list">PLAYERZ</div>
 			<div class="room-controls">
 				<button class="join-room">JOINZ</button>
 				<button class="leave-room" style="display:none">LEAF</button>

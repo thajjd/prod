@@ -1,5 +1,6 @@
 
-
+var arenaRadius;
+var arenaPos = {x: 0, y: 0};
 var connectedPlayers = [];
 var prods = [];
 var canvas = document.getElementById('canvas');
@@ -24,6 +25,8 @@ socket.on('initRemotePlayers', function(data){
 socket.on('update', function(data){
 	connectedPlayers = data.players;
 	prods = data.prods;
+	arenaRadius = data.arenaRadius;
+	arenaPos = data.arenaPos;
 });
 socket.on('initGame', function(data){
 	console.log('Starting Game ...');
@@ -35,6 +38,13 @@ socket.on('initGame', function(data){
 });
 socket.on('playerDeath', function(data){
 	$('#stats').append("<p>" + data + "</p>");
+});
+socket.on('gameOver', function(lastGameName){
+	$('#matchmaking').show();
+	$('#game').hide();
+	$('#stats').hide();
+	rematch(lastGameName);
+
 });
 
 function startLoop(){
@@ -56,7 +66,7 @@ function draw(){
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	//Draw Arena
 	ctx.beginPath();
-  	ctx.arc(400, 400, 300, 0, 2 * Math.PI);
+  	ctx.arc(arenaPos.x, arenaPos.y, arenaRadius, 0, 2 * Math.PI);
   	ctx.lineWidth = 5;
   	ctx.strokeStyle = '#000000';
   	ctx.stroke();
@@ -120,7 +130,7 @@ function activateMouseInput(){
 		        x: ((e.clientX)+(cursorWidth/2)) - canvasOffsetx,
 				y: ((e.clientY)+(cursorWidth/2)) - canvasOffsety
 		    };
-		    console.log(mousePos);
+		    // console.log(mousePos);
 		});
 
 	});

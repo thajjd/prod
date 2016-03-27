@@ -7,16 +7,25 @@ var OPEN_ROOM = '';
 $(document).ready(function() {
 	$('input[name="submit-name"]').click(function() {
 		USER = $('input[name="name"]').val();
+		socket.emit('checkUsername', USER);
+		socket.on('checkUsernameAnswer', function(ignAvailable){
+			if (ignAvailable === true) {
+				$('.name-form').hide();
+				$('.errorMsg').hide();
+				renderMatchList();
+			}else{
+				$('.errorMsg').show();
+				$('.errorMsg').html("FUCK! " + USER + " is allrädy taken!");
+			}
+		});
 
-		$('.name-form').hide();
-		renderMatchList();
+		
 
 		return false;
 	});
 
 	$('.create-room').click(function() {
 		var roomName = $('input[name="room-name"]').val();
-
 		if(roomName !== '') {
 			$.post(BASE_URL + '/rooms', {user: USER, name: roomName}, function(room) {
 				renderRoom(room);
@@ -49,15 +58,16 @@ function renderMatchList() {
 
 function renderRoomInList(room) {
 	var exists = $('.room-list').find('#' + room.name);
-	var template = $('<p class="room" id="' + room.name + '">' + room.name + ' - ' + room.players.length + '</p>');
+	var template = $('<p class="room" id="' + room.name + '">Room name: ' + room.name + '<br>Players: ' + room.players.length + '<br>Room Status: ' + room.status + '</p>');
 
 	if(exists.length) {
-		exists.html(template);
+		$('.room-list').html(template);
 	} else {
 		$('.room-list').append(template);
 
-		template.click(function() {
-			$.get(BASE_URL + '/room/' + room.name, function(room) {
+		$('.room').click(function() {
+			var clickedRoom = $(this).attr('id');
+			$.get(BASE_URL + '/room/' + clickedRoom, function(room) {
 				renderRoom(room);
 			}) ;
 		});
@@ -69,8 +79,8 @@ function renderRoom(room) {
 
 	OPEN_ROOM = room.name;
 
-	$('#open-room .room-name').text(room.name);
-	$('#open-room .player-list').html('');
+	$('#open-room .room-name').html("<h2>" + room.name + "</h2>");
+	$('#open-room .player-list').html('<p>PLAYERZ</p>');
 
 	$.each(room.players, function(index, player) {
 		playerNames.push(player.name);
@@ -84,6 +94,11 @@ function renderRoom(room) {
 	} else {
 		$('#open-room .join-room').show();
 		$('#open-room .leave-room').hide();
+	}
+	if (room.status == "Running") {
+		$('.room-controls').hide();
+	}else{
+		$('.room-controls').show();
 	}
 
 	$('#open-room .join-room').unbind('click').click(function() {
@@ -110,7 +125,14 @@ function joinRoom(name) {
 	socket.emit('joinGame', {roomName: name,playerName: USER});
 	
 }
-
+function rematch(name) {
+	$.post(BASE_URL + '/rooms/rematch', {user: USER, name: name}, function(room) {
+		renderMatchList();
+		renderRoom(room);
+		
+	});
+	socket.emit('rematch', {roomName: name,playerName: USER});
+}
 function leaveRoom(name) {
 	$.post(BASE_URL + '/rooms/leave', {user: USER, name: name}, function(room) {
 		renderMatchList();
