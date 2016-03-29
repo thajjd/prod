@@ -37,9 +37,8 @@ var game = function (io, roomData, id){
 	this.physicsLoop = function(){
 
 		if (this.deathCount >= this.players.length - 1) {
-			io.to(this.gameName).emit('gameOver', this.gameName);
-			clearInterval(this.thePhysicsInterval);
-			clearInterval(this.theServerInterval);
+			// io.to(this.gameName).emit('gameOver', this.gameName);
+			this.rematch();
 		}
 
 
@@ -208,8 +207,20 @@ var game = function (io, roomData, id){
 	};
 
 	this.serverUpdateLoop = function(){
-		io.to(roomData.name).emit('update', {players:this.players, prods:this.prods, arenaRadius: this.arenaRadius, arenaPos: this.arenaPos});
+		io.to(this.gameName).emit('update', {players:this.players, prods:this.prods, arenaRadius: this.arenaRadius, arenaPos: this.arenaPos});
 
+	};
+	this.rematch = function(){
+		this.prods = [];
+		this.deathCount = 0;
+		this.arenaRadius = 400;
+
+		for (var i = this.players.length - 1; i >= 0; i--) {
+			this.players[i].hp = 100;
+		}
+		clearInterval(this.thePhysicsInterval);
+		clearInterval(this.theServerInterval);
+		this.start(this);
 	};
 
 
