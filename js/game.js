@@ -13,6 +13,7 @@ var game = function (io, roomData, id){
 	this.gameName = roomData.name;
 	this.deathCount = 0;
 	this.lavaTickdmg = 0.4;
+	this.arenaDecrease = 0.2;
 
 	this.physicsLoopIntervall = 1000/66;
 	this.serverUpdateLoopIntervall = 1000/22;
@@ -54,7 +55,7 @@ var game = function (io, roomData, id){
 
 		//Decrease size of arena 
 		if (this.arenaRadius >= 100) {
-			this.arenaRadius -= this.lavaTickdmg * deltaTime;
+			this.arenaRadius -= this.arenaDecrease * deltaTime;
 		}
 		
 
@@ -76,7 +77,7 @@ var game = function (io, roomData, id){
 				
 
 				if (distance > this.arenaRadius + b.width) {
-					b.hp -= 0.1;
+					b.hp -= this.lavaTickdmg;
 				}
 				// var dx = a.x - b.x;
 				// var dy = a.y - b.y;
@@ -100,7 +101,7 @@ var game = function (io, roomData, id){
 			
 			if (typeof this.prods !== undefined && this.prods.length > 0) {
 				for (var i = this.prods.length - 1; i >= 0; i--) {
-					if (typeof this.prods[i] !== undefined) {
+					if (this.prods[i] !== undefined) {
 						this.prods[i].update(deltaTime);
 					}
 					

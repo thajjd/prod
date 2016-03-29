@@ -123,23 +123,23 @@ io.on('connection', function(socket){
   	});
 
   	socket.on('disconnect', function(){
-			console.log(id + 'disconnected');
-			for (var i = connectedPlayers.length - 1; i >= 0; i--) {
-				if (connectedPlayers[i].id == thisplr.id) {
-					for (var i = games.length - 1; i >= 0; i--) {
-						for (var j = games[i].players.length - 1; j >= 0; j--) {
-							if (games[i].players[j].id == thisplr.id) {
-								//Remove player from current if any
-								games[i].players.splice(j, 1);
-							}
+		console.log(id + ' disconnected');
+		for (var i = connectedPlayers.length - 1; i >= 0; i--) {
+			if (connectedPlayers[i].id == id) {
+				for (var i = games.length - 1; i >= 0; i--) {
+					for (var j = games[i].players.length - 1; j >= 0; j--) {
+						if (games[i].players[j].id == id) {
+							//Remove player from current if any
+							games[i].players.splice(j, 1);
 						}
 					}
-					//Remove player form global onlinelist
-					connectedPlayers.splice(i,1);
 				}
+				//Remove player form global onlinelist
+				connectedPlayers.splice(i,1);
 			}
-			io.emit(id + ' disconnected');
-		});
+		}
+		io.emit(id + ' disconnected');
+	});
   	
 });
 
@@ -281,6 +281,7 @@ app.post('/rooms/:op(join|leave|ready|rematch)', function(req, res) {
 			break;
 		case 'rematch':
 			room.status = "Waiting";
+			room.players.shift({name: req.body.user});
 			rooms.forEach(function(roomObj) {
 				var index = 0;
 				var roomPlayers = [];
@@ -295,7 +296,7 @@ app.post('/rooms/:op(join|leave|ready|rematch)', function(req, res) {
 					index++;
 				});
 			});
-			room.players.shift({name: req.body.user});
+			
 			room.players.push({name: req.body.user});
 
 			io.emit('update_room', room);
