@@ -19,7 +19,6 @@ var cursorWidth=10;
 socket.on('initRemotePlayers', function(data){
 	connectedPlayers = data;
 	
-	
 });
 
 socket.on('update', function(data){
@@ -32,9 +31,15 @@ socket.on('initGame', function(data){
 	console.log('Starting Game ...');
 	$('#matchmaking').hide();
 	$('#game').show();
+	$('#scoreboardarea').show();
+	
 	activateMouseInput();
 	activateGameInput();
 	startLoop();
+	updateScoreboard();
+});
+socket.on('updateScoreboard', function(data){
+	updateScoreboard();
 });
 socket.on('playerDeath', function(data){
 	$('#stats').append("<p>" + data + "</p>");
@@ -43,6 +48,7 @@ socket.on('gameOver', function(lastGameName){
 	$('#matchmaking').show();
 	$('#game').hide();
 	$('#stats').hide();
+	$('#scoreboardarea').hide();	
 	rematch(lastGameName);
 
 });
@@ -73,23 +79,27 @@ function draw(){
   	ctx.closePath();
 
 	for (var i = connectedPlayers.length - 1; i >= 0; i--) {
-		ctx.beginPath();
-		ctx.fillStyle = connectedPlayers[i].color;
-		ctx.arc(connectedPlayers[i].x, connectedPlayers[i].y, connectedPlayers[i].width, 0, 2 * Math.PI);
-		ctx.fill();
-		ctx.closePath();
+		if (connectedPlayers[i].dead === false) {
 
-		ctx.beginPath();
-		ctx.rect( connectedPlayers[i].x - 27, connectedPlayers[i].y - 42 , 54, 10 );
-		ctx.fillStyle = "#000000";
-		ctx.fill();
-		ctx.closePath();
+			ctx.beginPath();
+			ctx.fillStyle = connectedPlayers[i].color;
+			ctx.arc(connectedPlayers[i].x, connectedPlayers[i].y, connectedPlayers[i].width, 0, 2 * Math.PI);
+			ctx.fill();
+			ctx.closePath();
 
-		ctx.beginPath();
-		ctx.rect( connectedPlayers[i].x - 25, connectedPlayers[i].y - 40 , 50 - ((100  - connectedPlayers[i].hp) /2)  , 6 );
-		ctx.fillStyle = "#00F900";
-		ctx.fill();
-		ctx.closePath();
+			ctx.beginPath();
+			ctx.rect( connectedPlayers[i].x - 27, connectedPlayers[i].y - 42 , 54, 10 );
+			ctx.fillStyle = "#000000";
+			ctx.fill();
+			ctx.closePath();
+
+			ctx.beginPath();
+			ctx.rect( connectedPlayers[i].x - 25, connectedPlayers[i].y - 40 , 50 - ((100  - connectedPlayers[i].hp) /2)  , 6 );
+			ctx.fillStyle = "#00F900";
+			ctx.fill();
+			ctx.closePath();
+		}
+		
 	}
 
 	if (typeof prods !== 'undefined' && prods.length > 0) {
@@ -114,6 +124,30 @@ function draw(){
 
 	
 
+}
+
+function updateScoreboard(){
+	var output = "";
+	connectedPlayers.sort(compare);
+	console.log(connectedPlayers);
+	for (var i = connectedPlayers.length - 1; i >= 0; i--) {
+		output += "<tr>";
+		output += "<td>" + connectedPlayers[i].name + "</td><td>" + connectedPlayers[i].score + "</td>";
+		output += "</tr>";
+	}
+	$('#scoreboard').html(output);
+	console.log("scoreboard uppdaterad");
+	
+
+}
+//sort scoreboard
+function compare(a,b) {
+  if (a.score < b.score)
+    return -1;
+  else if (a.score > b.score)
+    return 1;
+  else 
+    return 0;
 }
 
 

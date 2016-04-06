@@ -1,15 +1,16 @@
 
 var helper=require('./helperFunctions.js');
 
-var prod = function (creatorID, targetPos, currentPlayerPosX, currentPlayerPosY, playerColor, timeCreated){
+var prod = function (creatorID, creatorName, targetPos, currentPlayerPosX, currentPlayerPosY, playerColor, timeCreated){
 
 	
 	this.speed = 8;
 	this.creator = creatorID;
+	this.creatorName = creatorName;
 	this.width = 15;
 	this.height = 15;
 	this.dmg = 10;
-	this.ttl = 5000;
+	this.ttl = 2000;
 	this.timeCreated = timeCreated;
 	// targetPos = correctAim(targetPos);
 	this.currentPos= {x:currentPlayerPosX-(this.width/2),y:currentPlayerPosY-(this.width/2)};

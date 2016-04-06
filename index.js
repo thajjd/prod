@@ -70,8 +70,8 @@ io.on('connection', function(socket){
 
 	  	//Attack
 	  	socket.on('prod', function(mousePosition){
-	  		if (now() - thisplr.lastCastProd >= thisplr.prodCooldown && thisplr.hp > 0) {
-				var newProd = new prod(id, mousePosition, thisplr.x+(thisplr.width/2), thisplr.y+(thisplr.height/2), thisplr.color, now());
+	  		if (now() - thisplr.lastCastProd >= thisplr.prodCooldown && thisplr.dead === false) {
+				var newProd = new prod(id, thisplr.name, mousePosition, thisplr.x+(thisplr.width/2), thisplr.y+(thisplr.height/2), thisplr.color, now());
 				thisplr.lastCastProd = now();
 				for (var i = games.length - 1; i >= 0; i--) {
 					if (games[i].gameID == thisplr.currentGame) {
@@ -105,21 +105,21 @@ io.on('connection', function(socket){
 	  	});
 
 	  	//Attack
-	  	socket.on('prod', function(mousePosition){
-	  		if (now() - thisplr.lastCastProd >= thisplr.prodCooldown && thisplr.hp > 0) {
-				var newProd = new prod(id, mousePosition, thisplr.x+(thisplr.width/2), thisplr.y+(thisplr.height/2), thisplr.color, now());
-				thisplr.lastCastProd = now();
-				for (var i = games.length - 1; i >= 0; i--) {
-					if (games[i].gameID == thisplr.currentGame) {
-						games[i].prods.push(newProd);
-					}
-				}
+	  	// socket.on('prod', function(mousePosition){
+	  	// 	if (now() - thisplr.lastCastProd >= thisplr.prodCooldown && thisplr.hp > 0) {
+				// var newProd = new prod(id, thisplr.name, mousePosition, thisplr.x+(thisplr.width/2), thisplr.y+(thisplr.height/2), thisplr.color, now());
+				// thisplr.lastCastProd = now();
+				// for (var i = games.length - 1; i >= 0; i--) {
+				// 	if (games[i].gameID == thisplr.currentGame) {
+				// 		games[i].prods.push(newProd);
+				// 	}
+				// }
 				
-				console.log("prod created");
-	  		}
+				// console.log("prod created");
+	  	// 	}
 	  		
 
-	  	});
+	  	// });
   	});
 
   	socket.on('disconnect', function(){

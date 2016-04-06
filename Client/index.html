@@ -44,6 +44,9 @@
 		min-height: 400px;
 		display: none;
 	}
+	#scoreboardarea{
+		display: none;
+	}
 	.errorMsg{
 		border: solid 3px tomato;
 		background-color: tomato;
@@ -116,8 +119,15 @@
 		<h1>PROD</h1>
 		<canvas id="canvas" width="1000" height="800"></canvas>
 	</div>
-	<div id="stats">
-		<h2>Fucking stats</h2>
+	<div id="scoreboardarea">
+		<h2>Fucking score and shit</h2>
+		<table>
+		<td>Naem</td>
+		<td>Killz</td>
+		<tbody id="scoreboard">
+			
+		</tbody>
+		</table>
 	</div>
 </body>
 <script>

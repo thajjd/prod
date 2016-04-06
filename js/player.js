@@ -22,6 +22,12 @@ var player = function (id, name){
 	this.y = spawny;
 	this.name = name;
 	this.currentGame;
+	this.dead = false;
+
+	//scores
+	this.score = 0;
+	this.kills = 0;
+	this.lastAttackedBy = "";
 
 	//spells
 	this.prodCooldown = 2000;
@@ -39,54 +45,62 @@ var player = function (id, name){
 
 	this.update = function(deltaTime){
 
+		if (this.dead === false) {
+			//Spelarna kan inte åka utanför world walls
+			if (this.x + this.width >= 1000) {
+				this.inputData.right = false;
+				this.x = 1000 - this.width;
+			}
+			if (this.x - this.width <= 0) {
+				this.inputData.left = false;
+				this.x = 0 + this.width;
+			}
+			if (this.y + this.width >= 800) {
+				this.inputData.down = false;
+				this.y = 800 - this.width;
+			}
+			if (this.y - this.width <= 0) {
+				this.inputData.up = false;
+				this.y = 0 + this.width;
+			}
+
+			//Öhh ah, input
+			if (this.inputData.left === true) {
+				this.x -= speed * deltaTime; 
+			}
+			if (this.inputData.right === true) {
+				this.x += speed * deltaTime;
+			}
+			if (this.inputData.up === true) {
+				this.y -= speed * deltaTime;
+			}
+			if (this.inputData.down === true) {
+				this.y += speed * deltaTime;
+			}
+
+			//Men du vet, knockback
+			if (this.isKnockbacked == true) {
+	  			this.y += (this.knockbackDir.y * this.currentKnockbackPower ) * deltaTime;
+	  			this.x += (this.knockbackDir.x * this.currentKnockbackPower ) * deltaTime;
+	  			this.currentKnockbackPower -= this.knockbackRecovery * deltaTime;
+
+	  			if (this.currentKnockbackPower <= 1) {
+	  				this.isKnockbacked = false;
+	  				this.knockbackDir.x = 0;
+	  				this.knockbackDir.y = 0;
+	  			}
+
+	  		}
+		}
+
 		
-		//Spelarna kan inte åka utanför world walls
-		if (this.x + this.width >= 1000) {
-			this.inputData.right = false;
-			this.x = 1000 - this.width;
-		}
-		if (this.x - this.width <= 0) {
-			this.inputData.left = false;
-			this.x = 0 + this.width;
-		}
-		if (this.y + this.width >= 800) {
-			this.inputData.down = false;
-			this.y = 800 - this.width;
-		}
-		if (this.y - this.width <= 0) {
-			this.inputData.up = false;
-			this.y = 0 + this.width;
-		}
-
-		//Öhh ah, input
-		if (this.inputData.left === true) {
-			this.x -= speed * deltaTime; 
-		}
-		if (this.inputData.right === true) {
-			this.x += speed * deltaTime;
-		}
-		if (this.inputData.up === true) {
-			this.y -= speed * deltaTime;
-		}
-		if (this.inputData.down === true) {
-			this.y += speed * deltaTime;
-		}
-
-		//Men du vet, knockback
-		if (this.isKnockbacked == true) {
-  			this.y += (this.knockbackDir.y * this.currentKnockbackPower ) * deltaTime;
-  			this.x += (this.knockbackDir.x * this.currentKnockbackPower ) * deltaTime;
-  			this.currentKnockbackPower -= this.knockbackRecovery * deltaTime;
-
-  			if (this.currentKnockbackPower <= 1) {
-  				this.isKnockbacked = false;
-  				this.knockbackDir.x = 0;
-  				this.knockbackDir.y = 0;
-  			}
-
-  		}
+		
 	};
 
+	this.kill = function(){
+		this.dead = true;
+		console.log(this.name + " died.");
+	};
 
 };
 

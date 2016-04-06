@@ -38,7 +38,7 @@ var game = function (io, roomData, id){
 
 		if (this.deathCount >= this.players.length - 1) {
 			// io.to(this.gameName).emit('gameOver', this.gameName);
-			this.rematch();
+			this.rematch(this);
 		}
 
 
@@ -60,39 +60,46 @@ var game = function (io, roomData, id){
 
 		if ( typeof this.players !== undefined) {
 			for (var i = this.players.length - 1; i >= 0; i--) {
-				this.players[i].update(deltaTime);
-				//Check if player is outside arena
-				var a = this.arenaPos;
-				var b = this.players[i];
-				//d=distance,c=collision
-				var distance = helper.getABSDistance(a, b);
+				if (this.players[i].dead === false) {
+					this.players[i].update(deltaTime);
+					//Check if player is outside arena
+					var a = this.arenaPos;
+					var b = this.players[i];
+					//d=distance,c=collision
+					var distance = helper.getABSDistance(a, b);
 
-						if(this.fpsTime>1000){
-							console.log(distance);
-							console.log(this.arenaRadius);
-							this.fpsTick=0;
-							this.fpsTime=0;
+							if(this.fpsTime>1000){
+								this.fpsTick=0;
+								this.fpsTime=0;
+							}
+					
+
+					if (distance > this.arenaRadius + b.width) {
+						b.hp -= this.lavaTickdmg;
+					}
+					// var dx = a.x - b.x;
+					// var dy = a.y - b.y;
+					// var d2 = dx * dx + dy * dy;
+					// if(d2 <= ((this.arenaRadius + b.width) * (this.arenaRadius + b.width))){
+						
+						
+					// }else{
+						
+					// }
+					if (b.hp <= 0) {
+						io.to(roomData.name).emit('playerDeath', this.players[i].name + " burned to death outside the ring...");	
+						// this.players.splice(i, 1);
+						this.players[i].kill();
+						for (var k = this.players.length - 1; k >= 0; k--) {
+							if (this.players[k].name === this.players[i].lastAttackedBy) {
+								this.players[k].score += 1;	
+							}
+							
 						}
-				
-
-				if (distance > this.arenaRadius + b.width) {
-					b.hp -= this.lavaTickdmg;
+						
+						this.deathCount ++;
+					}
 				}
-				// var dx = a.x - b.x;
-				// var dy = a.y - b.y;
-				// var d2 = dx * dx + dy * dy;
-				// if(d2 <= ((this.arenaRadius + b.width) * (this.arenaRadius + b.width))){
-					
-					
-				// }else{
-					
-				// }
-				if (b.hp <= 0) {
-					io.to(roomData.name).emit('playerDeath', this.players[i].name + " bit the dust, fucking noob...");	
-					this.players.splice(i, 1);
-					this.deathCount ++;
-				}
-
 			}
 		}
 		if (this.prods !== undefined) {
@@ -112,75 +119,90 @@ var game = function (io, roomData, id){
 						var a = this.prods[i];
 						var b = this.prods[j];
 						if (this.prods[j] !== undefined) {
-							if(i != j && a.creator != b.creator){
-								//d=distance,c=collision
-								var dx = a.currentPos.x - b.currentPos.x;
-								var dy = a.currentPos.y - b.currentPos.y;
-								var d2 = dx * dx + dy * dy;
-								if(d2 <= ((a.width + b.width) * (a.width + b.width))){
-									// Want shit to bounce of eachother, this is it!
-									// var dotProduct = dx * (b.normalized.x - a.normalized.x) + dy * (b.normalized.y - a.normalized.y);
-									
-									
-									// if(dotProduct > 0){
-									// 	var cScale = dotProduct / d2;
-									// 	var cX = dx * cScale;
-									// 	var cY = dy * cScale;
-									// 	var massTotal = a.width + b.width;
-									// 	var cWeightA = 2 * b.width / massTotal;
-									// 	var cWeightB = 2 * a.width / massTotal;
-									// 	a.normalized.x += (cWeightA * cX);
-									// 	a.normalized.y += (cWeightA * cY);
-									// 	b.normalized.x -= (cWeightB * cX);
-									// 	b.normalized.y -= (cWeightB * cY);
-									// }
+							if (a !== undefined && b !== undefined) {
+								if(i != j && a.creator != b.creator){
+									//d=distance,c=collision
+									var dx = a.currentPos.x - b.currentPos.x;
+									var dy = a.currentPos.y - b.currentPos.y;
+									var d2 = dx * dx + dy * dy;
+									if(d2 <= ((a.width + b.width) * (a.width + b.width))){
+										// Want shit to bounce of eachother, this is it!
+										// var dotProduct = dx * (b.normalized.x - a.normalized.x) + dy * (b.normalized.y - a.normalized.y);
+										
+										
+										// if(dotProduct > 0){
+										// 	var cScale = dotProduct / d2;
+										// 	var cX = dx * cScale;
+										// 	var cY = dy * cScale;
+										// 	var massTotal = a.width + b.width;
+										// 	var cWeightA = 2 * b.width / massTotal;
+										// 	var cWeightB = 2 * a.width / massTotal;
+										// 	a.normalized.x += (cWeightA * cX);
+										// 	a.normalized.y += (cWeightA * cY);
+										// 	b.normalized.x -= (cWeightB * cX);
+										// 	b.normalized.y -= (cWeightB * cY);
+										// }
 
-									console.log("prod - prod collision");
-									this.prods.splice(i, 1);
-									this.prods.splice(j, 1);
+										console.log("prod - prod collision");
+										this.prods.splice(i, 1);
+										this.prods.splice(j, 1);
+									}
 								}
 							}
+							
 						}
 						
 					}
 
 					for (var j = this.players.length - 1; j >= 0; j--) {
-						if (this.prods[i] !== undefined) {
-							var a = this.prods[i];
-							var b = this.players[j];
-							if (a.creator !== undefined) {
-								if(a.creator != b.id){
-									//d=distance,c=collision
-									var dx = a.currentPos.x - b.x;
-									var dy = a.currentPos.y - b.y;
-									var d2 = dx * dx + dy * dy;
-									if(d2 <= ((a.width + b.width) * (a.width + b.width))){
-										var avatarCenter = {x: b.x + (b.width/2), y: b.y +(b.width/2)};
-										var prodCenter = {x: a.currentPos.x + (a.width/2), y: a.currentPos.y + (a.width/2)};
-										var distance = helper.getDistance(avatarCenter, prodCenter);
-										var normalized = helper.normalize(distance);
-										b.currentKnockbackPower = a.knockbackPower;
-										b.knockbackDir.x += normalized.x;
-										b.knockbackDir.y += normalized.y;
-										b.isKnockbacked = true;
-											
-										// }
+						if (this.players[j].dead === false) {
 
-										console.log("Player - prod collision");
-										this.prods.splice(i, 1);
-										b.hp -= a.dmg;
-										if (b.hp <= 0) {
-											io.to(roomData.name).emit('playerDeath', this.players[j].name + " bit the dust, fucking noob...");	
-											this.players.splice(j, 1);
-											this.deathCount ++;
+							if (this.prods[i] !== undefined) {
+								var a = this.prods[i];
+								var b = this.players[j];
+								if (a.creator !== undefined) {
+									if(a.creator != b.id){
+										//d=distance,c=collision
+										var dx = a.currentPos.x - b.x;
+										var dy = a.currentPos.y - b.y;
+										var d2 = dx * dx + dy * dy;
+										if(d2 <= ((a.width + b.width) * (a.width + b.width))){
+											var avatarCenter = {x: b.x + (b.width/2), y: b.y +(b.width/2)};
+											var prodCenter = {x: a.currentPos.x + (a.width/2), y: a.currentPos.y + (a.width/2)};
+											var distance = helper.getDistance(avatarCenter, prodCenter);
+											var normalized = helper.normalize(distance);
+											b.currentKnockbackPower = a.knockbackPower;
+											b.knockbackDir.x += normalized.x;
+											b.knockbackDir.y += normalized.y;
+											b.isKnockbacked = true;
+												
+											// }
+
+											console.log("Player - prod collision");
+											
+											this.players[j].lastAttackedBy = this.prods[i].creatorName;
+											b.hp -= a.dmg;
+											if (b.hp <= 0) {
+												io.to(roomData.name).emit('playerDeath', this.players[j].name + " was owned by " + a.creatorName + "'s prod");	
+												// this.players.splice(j, 1);
+												this.players[j].kill();
+												for (var k = this.players.length - 1; k >= 0; k--) {
+													if (this.players[k].name === this.prods[i].creatorName) {
+														this.players[k].score += 1;	
+													}
+													
+												}
+												this.deathCount ++;
+											}
+											this.prods.splice(i, 1);
+
 										}
 
 									}
 
 								}
-
+								
 							}
-							
 						}
 						
 					}
@@ -208,19 +230,22 @@ var game = function (io, roomData, id){
 
 	this.serverUpdateLoop = function(){
 		io.to(this.gameName).emit('update', {players:this.players, prods:this.prods, arenaRadius: this.arenaRadius, arenaPos: this.arenaPos});
-
+		io.to(roomData.name).emit('updateScoreboard');
 	};
-	this.rematch = function(){
-		this.prods = [];
-		this.deathCount = 0;
-		this.arenaRadius = 400;
+	this.rematch = function(thisgame){
+		thisgame.prods = [];
+		thisgame.deathCount = 0;
+		thisgame.arenaRadius = 400;
 
-		for (var i = this.players.length - 1; i >= 0; i--) {
-			this.players[i].hp = 100;
+		for (var i = thisgame.players.length - 1; i >= 0; i--) {
+			thisgame.players[i].hp = 100;
+			thisgame.players[i].dead = false;
+			thisgame.players[i].lastAttackedBy = "";
 		}
-		clearInterval(this.thePhysicsInterval);
-		clearInterval(this.theServerInterval);
-		this.start(this);
+		clearInterval(thisgame.thePhysicsInterval);
+		clearInterval(thisgame.theServerInterval);
+		console.log('omstart påvörjas');
+		thisgame.start(thisgame);
 	};
 
 
