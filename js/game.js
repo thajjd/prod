@@ -25,6 +25,7 @@ var game = function (io, roomData, id){
 	this.optimalFramerate = 1000/60;
 	this.thePhysicsInterval;
 	this.theServerInterval;
+	this.deltaTime;
 
 
 	this.start = function(){
@@ -45,23 +46,160 @@ var game = function (io, roomData, id){
 		this.newTime = now();
 		this.lastFrameTime = isNaN(this.newTime-this.oldTime)?0:this.newTime-this.oldTime;
 		this.oldTime=this.newTime;
-		var deltaTime= isNaN(this.lastFrameTime/this.optimalFramerate)?1: this.lastFrameTime/this.optimalFramerate;
+		this.deltaTime= isNaN(this.lastFrameTime/this.optimalFramerate)?1: this.lastFrameTime/this.optimalFramerate;
 
 		this.fpsTime+=this.lastFrameTime;
 		this.fpsTick++;
 
 
 
+		
+		
+		this.arenaTick();
+		
+		//Did a prod collide with a prod?
+		this.prodprodcollision();
+		
+		//Did a prod collide with a player?
+		this.prodplayercollision();
+		
+		//Check if Prod TTL has passed
+		this.checkProdTTL();
+			
+
+			
+	};
+	this.checkProdTTL = function(){
+		if (typeof this.prods !== undefined && this.prods.length > 0) {
+			for (var i = this.prods.length - 1; i >= 0; i--) {
+				if (this.prods[i] !== undefined) {
+					this.prods[i].update(this.deltaTime);
+				}
+				if (this.prods[i] !== undefined) {
+					if (now() - this.prods[i].timeCreated > this.prods[i].ttl) {
+					
+						console.log('prod created: ' + this.prods[i].timeCreated);
+						console.log('prod destroyed: ' + now());
+						this.prods.splice(i, 1);
+					}
+					
+				}	
+			}	
+		}
+	};
+	this.prodplayercollision = function(){
+		if (typeof this.prods !== undefined && this.prods.length > 0) {
+			for (var i = this.prods.length - 1; i >= 0; i--) {
+				for (var j = this.players.length - 1; j >= 0; j--) {
+					if (this.players[j].dead === false) {
+
+						if (this.prods[i] !== undefined) {
+							var a = this.prods[i];
+							var b = this.players[j];
+							if (a.creator !== undefined) {
+								if(a.creator != b.id){
+									//d=distance,c=collision
+									var dx = a.currentPos.x - b.x;
+									var dy = a.currentPos.y - b.y;
+									var d2 = dx * dx + dy * dy;
+									if(d2 <= ((a.width + b.width) * (a.width + b.width))){
+										var avatarCenter = {x: b.x + (b.width/2), y: b.y +(b.width/2)};
+										var prodCenter = {x: a.currentPos.x + (a.width/2), y: a.currentPos.y + (a.width/2)};
+										var distance = helper.getDistance(avatarCenter, prodCenter);
+										var normalized = helper.normalize(distance);
+										b.currentKnockbackPower = a.knockbackPower;
+										b.knockbackDir.x += normalized.x;
+										b.knockbackDir.y += normalized.y;
+										b.isKnockbacked = true;
+											
+										// }
+
+										console.log("Player - prod collision");
+										
+										this.players[j].lastAttackedBy = this.prods[i].creatorName;
+										b.hp -= a.dmg;
+										if (b.hp <= 0) {
+											io.to(roomData.name).emit('playerDeath', this.players[j].name + " was owned by " + a.creatorName + "'s prod");	
+											// this.players.splice(j, 1);
+											this.players[j].kill();
+											for (var k = this.players.length - 1; k >= 0; k--) {
+												if (this.players[k].name === this.prods[i].creatorName) {
+													this.players[k].score += 1;	
+												}
+												
+											}
+											this.deathCount ++;
+										}
+										this.prods.splice(i, 1);
+
+									}
+
+								}
+
+							}
+							
+						}
+
+					}
+					
+				}
+			}
+		}
+	};
+	this.prodprodcollision = function(){
+		if (typeof this.prods !== undefined && this.prods.length > 0) {
+			for (var i = this.prods.length - 1; i >= 0; i--) {
+				for (var j = this.prods.length - 1; j >= 0; j--) {
+					var a = this.prods[i];
+					var b = this.prods[j];
+					if (this.prods[j] !== undefined) {
+						if (a !== undefined && b !== undefined) {
+							if(i != j && a.creator != b.creator){
+								//d=distance,c=collision
+								var dx = a.currentPos.x - b.currentPos.x;
+								var dy = a.currentPos.y - b.currentPos.y;
+								var d2 = dx * dx + dy * dy;
+								if(d2 <= ((a.width + b.width) * (a.width + b.width))){
+									// Want shit to bounce of eachother, this is it!
+									// var dotProduct = dx * (b.normalized.x - a.normalized.x) + dy * (b.normalized.y - a.normalized.y);
+									
+									
+									// if(dotProduct > 0){
+									// 	var cScale = dotProduct / d2;
+									// 	var cX = dx * cScale;
+									// 	var cY = dy * cScale;
+									// 	var massTotal = a.width + b.width;
+									// 	var cWeightA = 2 * b.width / massTotal;
+									// 	var cWeightB = 2 * a.width / massTotal;
+									// 	a.normalized.x += (cWeightA * cX);
+									// 	a.normalized.y += (cWeightA * cY);
+									// 	b.normalized.x -= (cWeightB * cX);
+									// 	b.normalized.y -= (cWeightB * cY);
+									// }
+
+									console.log("prod - prod collision");
+									this.prods.splice(i, 1);
+									this.prods.splice(j, 1);
+								}
+							}
+						}
+						
+					}
+					
+				}
+			}
+		}
+	};
+	this.arenaTick = function(){
 		//Decrease size of arena 
 		if (this.arenaRadius >= 100) {
-			this.arenaRadius -= this.arenaDecrease * deltaTime;
+			this.arenaRadius -= this.arenaDecrease * this.deltaTime;
 		}
-		
 
 		if ( typeof this.players !== undefined) {
 			for (var i = this.players.length - 1; i >= 0; i--) {
 				if (this.players[i].dead === false) {
-					this.players[i].update(deltaTime);
+					this.players[i].update(this.deltaTime);
 					//Check if player is outside arena
 					var a = this.arenaPos;
 					var b = this.players[i];
@@ -102,130 +240,6 @@ var game = function (io, roomData, id){
 				}
 			}
 		}
-		if (this.prods !== undefined) {
-
-			
-			if (typeof this.prods !== undefined && this.prods.length > 0) {
-				for (var i = this.prods.length - 1; i >= 0; i--) {
-					if (this.prods[i] !== undefined) {
-						this.prods[i].update(deltaTime);
-					}
-					
-
-					
-						
-					//Dig a prod collide with a prod?
-					for (var j = this.prods.length - 1; j >= 0; j--) {
-						var a = this.prods[i];
-						var b = this.prods[j];
-						if (this.prods[j] !== undefined) {
-							if (a !== undefined && b !== undefined) {
-								if(i != j && a.creator != b.creator){
-									//d=distance,c=collision
-									var dx = a.currentPos.x - b.currentPos.x;
-									var dy = a.currentPos.y - b.currentPos.y;
-									var d2 = dx * dx + dy * dy;
-									if(d2 <= ((a.width + b.width) * (a.width + b.width))){
-										// Want shit to bounce of eachother, this is it!
-										// var dotProduct = dx * (b.normalized.x - a.normalized.x) + dy * (b.normalized.y - a.normalized.y);
-										
-										
-										// if(dotProduct > 0){
-										// 	var cScale = dotProduct / d2;
-										// 	var cX = dx * cScale;
-										// 	var cY = dy * cScale;
-										// 	var massTotal = a.width + b.width;
-										// 	var cWeightA = 2 * b.width / massTotal;
-										// 	var cWeightB = 2 * a.width / massTotal;
-										// 	a.normalized.x += (cWeightA * cX);
-										// 	a.normalized.y += (cWeightA * cY);
-										// 	b.normalized.x -= (cWeightB * cX);
-										// 	b.normalized.y -= (cWeightB * cY);
-										// }
-
-										console.log("prod - prod collision");
-										this.prods.splice(i, 1);
-										this.prods.splice(j, 1);
-									}
-								}
-							}
-							
-						}
-						
-					}
-
-					for (var j = this.players.length - 1; j >= 0; j--) {
-						if (this.players[j].dead === false) {
-
-							if (this.prods[i] !== undefined) {
-								var a = this.prods[i];
-								var b = this.players[j];
-								if (a.creator !== undefined) {
-									if(a.creator != b.id){
-										//d=distance,c=collision
-										var dx = a.currentPos.x - b.x;
-										var dy = a.currentPos.y - b.y;
-										var d2 = dx * dx + dy * dy;
-										if(d2 <= ((a.width + b.width) * (a.width + b.width))){
-											var avatarCenter = {x: b.x + (b.width/2), y: b.y +(b.width/2)};
-											var prodCenter = {x: a.currentPos.x + (a.width/2), y: a.currentPos.y + (a.width/2)};
-											var distance = helper.getDistance(avatarCenter, prodCenter);
-											var normalized = helper.normalize(distance);
-											b.currentKnockbackPower = a.knockbackPower;
-											b.knockbackDir.x += normalized.x;
-											b.knockbackDir.y += normalized.y;
-											b.isKnockbacked = true;
-												
-											// }
-
-											console.log("Player - prod collision");
-											
-											this.players[j].lastAttackedBy = this.prods[i].creatorName;
-											b.hp -= a.dmg;
-											if (b.hp <= 0) {
-												io.to(roomData.name).emit('playerDeath', this.players[j].name + " was owned by " + a.creatorName + "'s prod");	
-												// this.players.splice(j, 1);
-												this.players[j].kill();
-												for (var k = this.players.length - 1; k >= 0; k--) {
-													if (this.players[k].name === this.prods[i].creatorName) {
-														this.players[k].score += 1;	
-													}
-													
-												}
-												this.deathCount ++;
-											}
-											this.prods.splice(i, 1);
-
-										}
-
-									}
-
-								}
-								
-							}
-						}
-						
-					}
-					
-
-
-					//Check if TTL has passed
-					if (this.prods[i] !== undefined) {
-						if (now() - this.prods[i].timeCreated > this.prods[i].ttl) {
-						
-							console.log('prod created: ' + this.prods[i].timeCreated);
-							console.log('prod destroyed: ' + now());
-							this.prods.splice(i, 1);
-						}
-						
-					}
-					
-				}
-			}
-		}
-		
-
-		
 	};
 
 	this.serverUpdateLoop = function(){
@@ -250,5 +264,7 @@ var game = function (io, roomData, id){
 
 
 };
+
+
 
 module.exports.game=game;
