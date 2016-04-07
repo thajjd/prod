@@ -16,7 +16,9 @@ var game = function (io, roomData, id){
 	this.arenaDecrease = 0.2;
 
 	this.physicsLoopIntervall = 1000/66;
-	this.serverUpdateLoopIntervall = 1000/22;
+	// Temporärt test tills lokal transpolering finns
+	// this.serverUpdateLoopIntervall = 1000/22;
+	this.serverUpdateLoopIntervall = 1000/60;
 	this.newTime;
 	this.oldTime;
 	this.lastFrameTime;

@@ -30,6 +30,12 @@
 	#game, .match-list {
 		display: none;
 	}
+	#game{
+		position: relative;
+		overflow: auto;
+		width: 1000px;
+		float: left;
+	}
 	#stats{
 		display: none;
 		width: 200px;
@@ -46,6 +52,14 @@
 	}
 	#scoreboardarea{
 		display: none;
+		float: left;
+	}
+	.cooldowns{
+		position: absolute;
+		bottom: 0;
+		right: 0;
+		background-color: #000;
+		color: white;
 	}
 	.errorMsg{
 		border: solid 3px tomato;
@@ -118,6 +132,18 @@
 	<div id="game">
 		<h1>PROD</h1>
 		<canvas id="canvas" width="1000" height="800"></canvas>
+		<div class="cooldowns">
+			<table>
+				<tr id="prod">
+					<td>Prod</td>
+					<td id="prodcd"></td>
+				</tr>
+				<tr id="blink">
+					<td>Blink</td>
+					<td id="blinkcd"></td>
+				</tr>
+			</table>
+		</div>
 	</div>
 	<div id="scoreboardarea">
 		<h2>Fucking score and shit</h2>

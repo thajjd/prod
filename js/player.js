@@ -1,8 +1,7 @@
+var now = require("performance-now");
+
 var speed = 2;
-
 var spawnradius = 250;
-
-
 
 var player = function (id, name){
 	this.id = id;
@@ -106,11 +105,13 @@ var player = function (id, name){
 		console.log(this.name + " died.");
 	};
 	this.castBlink = function(mousePosData){
-		// if (now() - this.lastCastBlink >= this.blinkCooldown && this.dead === false) {
+		if (now() - this.lastCastBlink >= this.blinkCooldown && this.dead === false) {
 			this.x = mousePosData.x;
 			this.y = mousePosData.y;
 			console.log("blink bror");
-  		// }
+			return true;
+  		}
+  		return false;
 	};
 
 };

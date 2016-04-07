@@ -70,7 +70,10 @@ io.on('connection', function(socket){
 	  		
 	  	});
 	  	socket.on('castBlink', function(mousePosData){
-	  		thisplr.castBlink(mousePosData);
+	  		var wasCast = thisplr.castBlink(mousePosData);
+	  		if (wasCast) {
+	  			socket.emit('cooldownBlink', thisplr.blinkCooldown);
+	  		}
 	  	});
 
 	  	//Attack
@@ -218,7 +221,7 @@ app.get('/rooms', function (req, res) {
 app.post('/rooms', function(req, res) {
 	// for (var i = rooms.length - 1; i >= 0; i--) {
 	// 	if (room[i].name == req.body.name) {
-			
+
 	// 	}
 	// }
 	rooms.forEach(function(room) {

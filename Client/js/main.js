@@ -10,6 +10,17 @@ var mousePos = {x: 0, y: 0};
 var inputKey = {left:false,up:false,right:false,down:false,space:false};
 var cursorWidth=10;
 
+var blinkCooldownTime;
+var blinkCooldownUpdated;
+
+var newTime;
+var oldTime;
+var lastFrameTime;
+var optimalFramerate;
+var fpsTime = 0;
+var fpsTick = 0;
+var deltaTime;
+
 
 socket.on('initRemotePlayers', function(data){
 	connectedPlayers = data;
@@ -36,6 +47,11 @@ socket.on('initGame', function(data){
 socket.on('updateScoreboard', function(data){
 	updateScoreboard();
 });
+socket.on('cooldownBlink', function(blinkCooldown){
+	blinkCooldownUpdated = Date.now();
+	blinkCooldownTime = blinkCooldown;
+	// $('#blinkcd').html(blinkCooldown);
+});
 socket.on('playerDeath', function(data){
 	$('#stats').append("<p>" + data + "</p>");
 });
@@ -49,6 +65,22 @@ socket.on('gameOver', function(lastGameName){
 });
 
 function startLoop(){
+
+	newTime = Date.now();
+	lastFrameTime = isNaN(newTime-oldTime)?0:newTime-oldTime;
+	oldTime=newTime;
+	deltaTime= isNaN(lastFrameTime/optimalFramerate)?1: lastFrameTime/optimalFramerate;
+
+	fpsTime+=lastFrameTime;
+	fpsTick++;
+
+	if (newTime - blinkCooldownUpdated < blinkCooldownTime ) {
+		$('#blinkcd').html(newTime-blinkCooldownUpdated);
+	}else{
+		if ($('#blinkcd').html() !== "REDDY") {
+			$('#blinkcd').html("REDDY");
+		}
+	}
 
 	draw();
 
