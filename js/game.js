@@ -50,10 +50,6 @@ var game = function (io, roomData, id){
 
 		this.fpsTime+=this.lastFrameTime;
 		this.fpsTick++;
-
-
-
-		
 		
 		this.arenaTick();
 		
@@ -145,6 +141,7 @@ var game = function (io, roomData, id){
 				}
 			}
 		}
+		io.to(roomData.name).emit('updateScoreboard');
 	};
 	this.prodprodcollision = function(){
 		if (typeof this.prods !== undefined && this.prods.length > 0) {
@@ -231,6 +228,7 @@ var game = function (io, roomData, id){
 						for (var k = this.players.length - 1; k >= 0; k--) {
 							if (this.players[k].name === this.players[i].lastAttackedBy) {
 								this.players[k].score += 1;	
+								io.to(roomData.name).emit('updateScoreboard');
 							}
 							
 						}
@@ -244,7 +242,7 @@ var game = function (io, roomData, id){
 
 	this.serverUpdateLoop = function(){
 		io.to(this.gameName).emit('update', {players:this.players, prods:this.prods, arenaRadius: this.arenaRadius, arenaPos: this.arenaPos});
-		io.to(roomData.name).emit('updateScoreboard');
+		
 	};
 	this.rematch = function(thisgame){
 		thisgame.prods = [];

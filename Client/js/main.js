@@ -7,13 +7,8 @@ var canvas = document.getElementById('canvas');
 
 var mousePos = {x: 0, y: 0};
 
-var inputKey = {left:false,up:false,right:false,down:false};
+var inputKey = {left:false,up:false,right:false,down:false,space:false};
 var cursorWidth=10;
-
-
-
-
-
 
 
 socket.on('initRemotePlayers', function(data){
@@ -129,14 +124,12 @@ function draw(){
 function updateScoreboard(){
 	var output = "";
 	connectedPlayers.sort(compare);
-	console.log(connectedPlayers);
 	for (var i = connectedPlayers.length - 1; i >= 0; i--) {
 		output += "<tr>";
 		output += "<td>" + connectedPlayers[i].name + "</td><td>" + connectedPlayers[i].score + "</td>";
 		output += "</tr>";
 	}
 	$('#scoreboard').html(output);
-	console.log("scoreboard uppdaterad");
 	
 
 }
@@ -194,25 +187,30 @@ function activateGameInput(){
 
 function keydown(e){
 if (e.keyCode==65)
-  inputKey.left=true;
+	inputKey.left=true;
 else if (e.keyCode==87)
-  inputKey.up=true;
+	inputKey.up=true;
 else if (e.keyCode==68)
-  inputKey.right=true;
+	inputKey.right=true;
 else if (e.keyCode==83)
-  inputKey.down=true;
+	inputKey.down=true;
+else if (e.keyCode==32){
+	console.log("space pressed");
+	socket.emit('castBlink', mousePos);
+}
 socket.emit('input',inputKey);
 }
 
 function keyup(e){
 if (e.keyCode==65)
-  inputKey.left=false;
+	inputKey.left=false;
 else if (e.keyCode==87)
-  inputKey.up=false;
+	inputKey.up=false;
 else if (e.keyCode==68)
-  inputKey.right=false;
+	inputKey.right=false;
 else if (e.keyCode==83)
-  inputKey.down=false;
+	inputKey.down=false;
+ 
 socket.emit('input',inputKey);
 }
 //=========== End of INPUT =========

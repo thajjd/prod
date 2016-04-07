@@ -29,10 +29,14 @@ var player = function (id, name){
 	this.kills = 0;
 	this.lastAttackedBy = "";
 
-	//spells
+	//SPELLS
+	//prod
 	this.prodCooldown = 2000;
 	this.lastCastProd = this.prodCooldown;
-
+	//blink
+	this.blinkCooldown = 5000;
+	this.lastCastBlink = this.blinkCooldown;
+	this.blinkRange = 200;
 	
 	this.acceleration = 1;
 	this.knockbackDir = {x: 0, y: 0};
@@ -89,8 +93,8 @@ var player = function (id, name){
 	  				this.knockbackDir.x = 0;
 	  				this.knockbackDir.y = 0;
 	  			}
-
 	  		}
+
 		}
 
 		
@@ -100,6 +104,13 @@ var player = function (id, name){
 	this.kill = function(){
 		this.dead = true;
 		console.log(this.name + " died.");
+	};
+	this.castBlink = function(mousePosData){
+		// if (now() - this.lastCastBlink >= this.blinkCooldown && this.dead === false) {
+			this.x = mousePosData.x;
+			this.y = mousePosData.y;
+			console.log("blink bror");
+  		// }
 	};
 
 };
