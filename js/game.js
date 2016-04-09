@@ -13,7 +13,7 @@ var game = function (io, roomData, id){
 	this.gameName = roomData.name;
 	this.deathCount = 0;
 	this.lavaTickdmg = 0.4;
-	this.arenaDecrease = 0.2;
+	this.arenaDecrease = 0.1;
 
 	this.physicsLoopIntervall = 1000/66;
 	// Temporärt test tills lokal transpolering finns
@@ -38,11 +38,17 @@ var game = function (io, roomData, id){
 	};
 
 	this.physicsLoop = function(){
+		if (this.players.length < 2) {
+			this.stopGame(this);
+		}else{
+			if (this.deathCount >= this.players.length - 1) {
+				// io.to(this.gameName).emit('gameOver', this.gameName);
+				console.log(this.players.length);
+				this.nextRound(this);
 
-		if (this.deathCount >= this.players.length - 1) {
-			// io.to(this.gameName).emit('gameOver', this.gameName);
-			this.rematch(this);
+			}
 		}
+		
 
 
 		this.newTime = now();
@@ -246,7 +252,7 @@ var game = function (io, roomData, id){
 		io.to(this.gameName).emit('update', {players:this.players, prods:this.prods, arenaRadius: this.arenaRadius, arenaPos: this.arenaPos});
 		
 	};
-	this.rematch = function(thisgame){
+	this.nextRound = function(thisgame){
 		thisgame.prods = [];
 		thisgame.deathCount = 0;
 		thisgame.arenaRadius = 400;
@@ -258,8 +264,13 @@ var game = function (io, roomData, id){
 		}
 		clearInterval(thisgame.thePhysicsInterval);
 		clearInterval(thisgame.theServerInterval);
-		console.log('omstart påvörjas');
+		console.log('omstart påbörjas');
 		thisgame.start(thisgame);
+	};
+	this.stopGame = function(thisgame){
+		clearInterval(thisgame.thePhysicsInterval);
+		clearInterval(thisgame.theServerInterval);
+		io.to(roomData.name).emit('stopGame');
 	};
 
 

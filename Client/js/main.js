@@ -10,8 +10,15 @@ var mousePos = {x: 0, y: 0};
 var inputKey = {left:false,up:false,right:false,down:false,space:false};
 var cursorWidth=10;
 
+//Spells
 var blinkCooldownTime;
 var blinkCooldownUpdated;
+
+var prodCooldownUpdated;
+var prodCooldownTime;
+
+var meleeCooldownUpdated;
+var meleeCooldownTime;
 
 var newTime;
 var oldTime;
@@ -20,6 +27,15 @@ var optimalFramerate;
 var fpsTime = 0;
 var fpsTick = 0;
 var deltaTime;
+
+var gameRunning = false;
+
+var wKey = 87;
+var aKey = 65;
+var sKey = 83;
+var dKey = 68;
+var spaceKey = 32;
+var fKey = 70;
 
 
 socket.on('initRemotePlayers', function(data){
@@ -38,7 +54,7 @@ socket.on('initGame', function(data){
 	$('#matchmaking').hide();
 	$('#game').show();
 	$('#scoreboardarea').show();
-	
+	gameRunning = true;
 	activateMouseInput();
 	activateGameInput();
 	startLoop();
@@ -50,10 +66,14 @@ socket.on('updateScoreboard', function(data){
 socket.on('cooldownBlink', function(blinkCooldown){
 	blinkCooldownUpdated = Date.now();
 	blinkCooldownTime = blinkCooldown;
-	// $('#blinkcd').html(blinkCooldown);
 });
-socket.on('playerDeath', function(data){
-	$('#stats').append("<p>" + data + "</p>");
+socket.on('cooldownProd', function(prodCooldown){
+	prodCooldownUpdated = Date.now();
+	prodCooldownTime = prodCooldown;
+});
+socket.on('cooldownMelee', function(meleeCooldown){
+	meleeCooldownUpdated = Date.now();
+	meleeCooldownTime = meleeCooldown;
 });
 socket.on('gameOver', function(lastGameName){
 	$('#matchmaking').show();
@@ -61,6 +81,14 @@ socket.on('gameOver', function(lastGameName){
 	$('#stats').hide();
 	$('#scoreboardarea').hide();	
 	rematch(lastGameName);
+
+});
+socket.on('stopGame', function(){
+	gameRunning = false;
+	$('#matchmaking').show();
+	$('#game').hide();
+	$('#stats').hide();
+	$('#scoreboardarea').hide();
 
 });
 
@@ -81,10 +109,26 @@ function startLoop(){
 			$('#blinkcd').html("REDDY");
 		}
 	}
+	if (newTime - prodCooldownUpdated < prodCooldownTime ) {
+		$('#prodcd').html(newTime-prodCooldownUpdated);
+	}else{
+		if ($('#prodcd').html() !== "REDDY") {
+			$('#prodcd').html("REDDY");
+		}
+	}
+	if (newTime - meleeCooldownUpdated < meleeCooldownTime ) {
+		$('#meleecd').html(newTime-meleeCooldownUpdated);
+	}else{
+		if ($('#meleecd').html() !== "REDDY") {
+			$('#meleecd').html("REDDY");
+		}
+	}
 
 	draw();
-
-	window.requestAnimationFrame(startLoop);
+	if (gameRunning) {
+		window.requestAnimationFrame(startLoop);	
+	}
+	
 }
 
 function mouseClickCanvas(e){
@@ -200,7 +244,7 @@ function activateGameInput(){
 	window.addEventListener("keydown", function(e) {
 	    // space and wasd keys
 
-	    if([83, 87, 65, 68, 32].indexOf(e.keyCode) > -1) {
+	    if([wKey, aKey, sKey, dKey, spaceKey, fKey].indexOf(e.keyCode) > -1) {
 	        e.preventDefault();
 	        keydown(e);
 	    }
@@ -209,7 +253,7 @@ function activateGameInput(){
 	window.addEventListener("keyup", function(e) {
 	    // space and wasd keys
 
-	    if([83, 87, 65, 68, 32].indexOf(e.keyCode) > -1) {
+	    if([wKey, aKey, sKey, dKey, spaceKey, fKey].indexOf(e.keyCode) > -1) {
 	        e.preventDefault();
 	        keyup(e);
 	    }
@@ -218,29 +262,31 @@ function activateGameInput(){
 
 
 function keydown(e){
-if (e.keyCode==65)
+if (e.keyCode==aKey)
 	inputKey.left=true;
-else if (e.keyCode==87)
+else if (e.keyCode==wKey)
 	inputKey.up=true;
-else if (e.keyCode==68)
+else if (e.keyCode==dKey)
 	inputKey.right=true;
-else if (e.keyCode==83)
+else if (e.keyCode==sKey)
 	inputKey.down=true;
-else if (e.keyCode==32){
-	console.log("space pressed");
+else if (e.keyCode==spaceKey){
 	socket.emit('castBlink', mousePos);
+}
+else if (e.keyCode==fKey){
+	socket.emit('castMelee');
 }
 socket.emit('input',inputKey);
 }
 
 function keyup(e){
-if (e.keyCode==65)
+if (e.keyCode==aKey)
 	inputKey.left=false;
-else if (e.keyCode==87)
+else if (e.keyCode==wKey)
 	inputKey.up=false;
-else if (e.keyCode==68)
+else if (e.keyCode==dKey)
 	inputKey.right=false;
-else if (e.keyCode==83)
+else if (e.keyCode==sKey)
 	inputKey.down=false;
  
 socket.emit('input',inputKey);

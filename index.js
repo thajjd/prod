@@ -74,6 +74,7 @@ io.on('connection', function(socket){
 	  		if (wasCast) {
 	  			socket.emit('cooldownBlink', thisplr.blinkCooldown);
 	  		}
+	  		wasCast = false;
 	  	});
 
 	  	//Attack
@@ -88,52 +89,61 @@ io.on('connection', function(socket){
 				}
 				
 				console.log("prod created");
+				socket.emit('cooldownProd',thisplr.prodCooldown);
 	  		}
-	  		
-
 	  	});
-
-		
+	  	socket.on('castMelee', function(){
+	  		var wasCast;
+	  		for (var i = games.length - 1; i >= 0; i--) {
+	  			if (games[i].gameID == thisplr.currentGame) {
+					wasCast = thisplr.castMelee(game[i]);
+				}
+	  		}
+	  		if (wasCast) {
+	  			socket.emit('cooldownMelee', thisplr.meleeCooldown);
+	  		}
+	  		wasCast = false;
+	  	});
   	});
 
-  	socket.on('rematch', function(data){
-  		socket.leave(data.roomName);
-  		socket.join(data.roomName);
+  // 	socket.on('rematch', function(data){
+  // 		socket.leave(data.roomName);
+  // 		socket.join(data.roomName);
 
-  		socket.on('leaveGame', function(data){
-	  		socket.leave(data.roomName);
-	  	});
+  // 		socket.on('leaveGame', function(data){
+	 //  		socket.leave(data.roomName);
+	 //  	});
 
 	  	
 	  	
-		socket.emit('initRemotePlayers', connectedPlayers);
+		// socket.emit('initRemotePlayers', connectedPlayers);
 
-	  	socket.on('input', function(inputData){
-	  		thisplr.inputData = inputData;
-	  	});
+	 //  	socket.on('input', function(inputData){
+	 //  		thisplr.inputData = inputData;
+	 //  	});
 
-	  	//Attack
-	  	// socket.on('prod', function(mousePosition){
-	  	// 	if (now() - thisplr.lastCastProd >= thisplr.prodCooldown && thisplr.hp > 0) {
-				// var newProd = new prod(id, thisplr.name, mousePosition, thisplr.x+(thisplr.width/2), thisplr.y+(thisplr.height/2), thisplr.color, now());
-				// thisplr.lastCastProd = now();
-				// for (var i = games.length - 1; i >= 0; i--) {
-				// 	if (games[i].gameID == thisplr.currentGame) {
-				// 		games[i].prods.push(newProd);
-				// 	}
-				// }
-				
-				// console.log("prod created");
-	  	// 	}
-	  		
-
-	  	// });
-  	});
+  // 	});
 
   	socket.on('disconnect', function(){
 		console.log(id + ' disconnected');
-		for (var i = connectedPlayers.length - 1; i >= 0; i--) {
-			if (connectedPlayers[i].id == id) {
+		for (var i = rooms.length - 1; i >= 0; i--) {
+			for (var j = rooms[i].players.length - 1; j >= 0; j--) {
+				if (rooms[i] !==undefined && thisplr !== undefined) {
+					if (thisplr.name == rooms[i].players[j].name) {
+						rooms[i].players.splice(j, 1);
+						io.emit('update_room', rooms[i]);
+
+						if (rooms[i].players.length < 2) {
+							rooms.splice(i,1);
+
+						}
+					}
+				}
+				
+			}
+		}
+		for (var k = connectedPlayers.length - 1; k >= 0; k--) {
+			if (connectedPlayers[k].id == id) {
 				for (var i = games.length - 1; i >= 0; i--) {
 					for (var j = games[i].players.length - 1; j >= 0; j--) {
 						if (games[i].players[j].id == id) {
@@ -142,11 +152,13 @@ io.on('connection', function(socket){
 						}
 					}
 				}
-				//Remove player form global onlinelist
-				connectedPlayers.splice(i,1);
+				//Remove player from global onlinelist
+				connectedPlayers.splice(k,1);
 			}
 		}
 		io.emit(id + ' disconnected');
+		
+
 	});
   	
 });
@@ -219,35 +231,45 @@ app.get('/rooms', function (req, res) {
 });
 
 app.post('/rooms', function(req, res) {
-	// for (var i = rooms.length - 1; i >= 0; i--) {
-	// 	if (room[i].name == req.body.name) {
+	var roomTaken = false;
+	for (var i = rooms.length - 1; i >= 0; i--) {
+		if (rooms[i].name == req.body.name) {
+			roomTaken = true;
+		}
+	}
+	if (roomTaken === false) {
+		rooms.forEach(function(room) {
+			var index = 0;
 
-	// 	}
-	// }
-	rooms.forEach(function(room) {
-		var index = 0;
+			room.players.forEach(function(player) {
+				if(player.name == req.body.user) {
+					room.players.splice(index, 1);
+					io.emit('update_room', room);
+				}
 
-		room.players.forEach(function(player) {
-			if(player.name == req.body.user) {
-				room.players.splice(index, 1);
-				io.emit('update_room', room);
-			}
-
-			index++;
+				index++;
+			});
 		});
-	});
+		
+		var room = {
+			name: req.body.name,
+			players: [{name: req.body.user}],
+			status: "Waiting"
+		};
+
+		rooms.push(room);
+
+		io.emit('update_room', room);
+
+		res.json(room);
+	}
+	for (var i = rooms.length - 1; i >= 0; i--) {
+		if(rooms[i].players.length === 0){
+			rooms.splice(i,1);
+
+		}			
+	}
 	
-	var room = {
-		name: req.body.name,
-		players: [{name: req.body.user}],
-		status: "Waiting"
-	};
-
-	rooms.push(room);
-
-	io.emit('update_room', room);
-
-	res.json(room);
 });
 
 app.get('/room/:name', function(req, res) {
@@ -322,7 +344,6 @@ app.post('/rooms/:op(join|leave|ready|rematch)', function(req, res) {
 				if(player.name == req.body.user) {
 					room.players.splice(index, 1);
 				}
-
 				index++;
 			});
 
@@ -346,7 +367,7 @@ app.post('/rooms/:op(join|leave|ready|rematch)', function(req, res) {
 				}
 			});
 
-			if(countReady == room.players.length) {
+			if(countReady == room.players.length && room.players.length > 1) {
 				room.status = 'Running';
 				startRoom(room);
 			}
@@ -355,7 +376,13 @@ app.post('/rooms/:op(join|leave|ready|rematch)', function(req, res) {
 
 			break;
 	}
+	for (var i = rooms.length - 1; i >= 0; i--) {
+		if(rooms[i].players.length === 0){
+			rooms.splice(i,1);
 
+		}			
+	}
+	io.emit('update_room');
 	res.json(room);
 });
 

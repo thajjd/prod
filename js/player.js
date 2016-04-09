@@ -32,11 +32,17 @@ var player = function (id, name){
 	//prod
 	this.prodCooldown = 2000;
 	this.lastCastProd = this.prodCooldown;
+
 	//blink
 	this.blinkCooldown = 5000;
 	this.lastCastBlink = this.blinkCooldown;
 	this.blinkRange = 200;
+
+	//Melee
+	this.meleeCooldown = 3000;
+	this.lastCastMelee = this.meleeCooldown;
 	
+	this.currentGame;
 	this.acceleration = 1;
 	this.knockbackDir = {x: 0, y: 0};
 	this.originalKnockbackDir;
@@ -108,7 +114,18 @@ var player = function (id, name){
 		if (now() - this.lastCastBlink >= this.blinkCooldown && this.dead === false) {
 			this.x = mousePosData.x;
 			this.y = mousePosData.y;
+			this.lastCastBlink = now();
 			console.log("blink bror");
+			return true;
+  		}
+  		return false;
+	};
+	this.castMelee = function(){
+		if (now() - this.lastCastMelee >= this.meleeCooldown && this.dead === false) {
+
+
+			this.lastCastMelee = now();
+			console.log("Melee bror");
 			return true;
   		}
   		return false;

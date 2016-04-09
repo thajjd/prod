@@ -49,6 +49,7 @@ function renderMatchList() {
 			$('.matches-msg').text('NO FUCKING GAMES HERE');
 		} else {
 			$('.matches-msg').text('');
+			$('.room-list').html("");
 			$.each(data, function(index, room) {
 				renderRoomInList(room);
 			});
