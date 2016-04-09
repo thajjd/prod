@@ -214,6 +214,11 @@ app.get('/js/:name', function (req, res) {
   console.log(req.params.name+" sent");
 });
 
+app.get('/grafx/:name', function (req, res) {
+  res.sendFile(__dirname+"/grafx/"+req.params.name);
+  console.log(req.params.name+" sent");
+});
+
 app.get('/rooms', function (req, res) {
 	res.json(rooms);
 });
