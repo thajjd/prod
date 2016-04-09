@@ -23,12 +23,32 @@ var deltaTime;
 
 
 socket.on('initRemotePlayers', function(data){
-	connectedPlayers = data;
-	
+	$.each(data, function(index, player) {
+		var obj = new Player();
+		obj.init(player);
+		connectedPlayers.push(obj);
+	});
 });
 
 socket.on('update', function(data){
-	connectedPlayers = data.players;
+	$.each(data.players, function(index, serverPlayer) {
+		var playerIsLoaded = false;
+
+		$.each(connectedPlayers, function(lindex, localPlayer) {
+			if(serverPlayer.id == localPlayer.id) {
+				playerIsLoaded = true;
+				localPlayer.load(serverPlayer);
+			}
+		})
+
+		if(!playerIsLoaded) {
+			var obj = new Player();
+			obj.init(serverPlayer);
+			connectedPlayers.push(obj);
+		}
+	})
+
+
 	prods = data.prods;
 	arenaRadius = data.arenaRadius;
 	arenaPos = data.arenaPos;
@@ -106,27 +126,7 @@ function draw(){
   	ctx.closePath();
 
 	for (var i = connectedPlayers.length - 1; i >= 0; i--) {
-		if (connectedPlayers[i].dead === false) {
-
-			ctx.beginPath();
-			ctx.fillStyle = connectedPlayers[i].color;
-			ctx.arc(connectedPlayers[i].x, connectedPlayers[i].y, connectedPlayers[i].width, 0, 2 * Math.PI);
-			ctx.fill();
-			ctx.closePath();
-
-			ctx.beginPath();
-			ctx.rect( connectedPlayers[i].x - 27, connectedPlayers[i].y - 42 , 54, 10 );
-			ctx.fillStyle = "#000000";
-			ctx.fill();
-			ctx.closePath();
-
-			ctx.beginPath();
-			ctx.rect( connectedPlayers[i].x - 25, connectedPlayers[i].y - 40 , 50 - ((100  - connectedPlayers[i].hp) /2)  , 6 );
-			ctx.fillStyle = "#00F900";
-			ctx.fill();
-			ctx.closePath();
-		}
-		
+		connectedPlayers[i].render(ctx);
 	}
 
 	if (typeof prods !== 'undefined' && prods.length > 0) {
