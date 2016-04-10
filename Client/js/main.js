@@ -199,10 +199,6 @@ function draw(){
   	ctx.fill();
   	ctx.closePath();
 
-  	
-
-	
-
 }
 
 function updateScoreboard(){

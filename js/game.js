@@ -115,8 +115,6 @@ var game = function (io, roomData, id){
 										b.knockbackDir.x += normalized.x;
 										b.knockbackDir.y += normalized.y;
 										b.isKnockbacked = true;
-											
-										// }
 
 										console.log("Player - prod collision");
 										

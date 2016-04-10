@@ -1,4 +1,5 @@
 var now = require("performance-now");
+var helper=require('./helperFunctions.js');
 
 var speed = 2;
 var spawnradius = 250;
@@ -22,6 +23,7 @@ var player = function (id, name){
 	this.name = name;
 	this.currentGame;
 	this.dead = false;
+	this.isCasting = false;
 
 	//scores
 	this.score = 0;
@@ -29,6 +31,8 @@ var player = function (id, name){
 	this.lastAttackedBy = "";
 
 	//SPELLS
+
+	
 	//prod
 	this.prodCooldown = 2000;
 	this.lastCastProd = this.prodCooldown;
@@ -39,8 +43,13 @@ var player = function (id, name){
 	this.blinkRange = 200;
 
 	//Melee
-	this.meleeCooldown = 3000;
+	this.meleeCooldown = 5000;
 	this.lastCastMelee = this.meleeCooldown;
+	this.startCastingMelee;
+	this.castTime = 1000;
+	this.meleeDmg = 10;
+	this.meleeRange = 80;
+	this.meleeKnockbackPower = 10;
 	
 	this.currentGame;
 	this.acceleration = 1;
@@ -73,6 +82,10 @@ var player = function (id, name){
 				this.y = 0 + this.width;
 			}
 
+			//TODO CASTING TIME
+			if (this.isCasting) {
+				if (true) {}
+			}
 			//Öhh ah, input
 			if (this.inputData.left === true) {
 				this.x -= speed * deltaTime; 
@@ -122,8 +135,39 @@ var player = function (id, name){
 	};
 	this.castMelee = function(game){
 		if (now() - this.lastCastMelee >= this.meleeCooldown && this.dead === false) {
+			//Stand still while casting
+			this.isCasting = true;
+			this.startCastingMelee = now();
+
 			for (var i = game.players.length - 1; i >= 0; i--) {
-				//TODO VAD HÄNDER OM SPELARE ÄR TILLRÄCKLIGT NÄRA??
+
+				var target = game.players[i];
+
+				if (target.dead === false && target.id !== this.id) {
+
+					var ABSDistance = helper.getABSDistance(target, this);
+					// var dx = this.x - target.x;
+					// var dy = this.y - target.y;
+					// var d2 = dx * dx + dy * dy;
+					if(ABSDistance <= this.meleeRange){
+						var targetCenter = {x: target.x + (target.width/2), y: target.y +(target.width/2)};
+						var thisCenter = {x: this.x + (this.width/2), y: this.y + (this.width/2)};
+						var distance = helper.getDistance(targetCenter, thisCenter);
+						var normalized = helper.normalize(distance);
+						target.isKnockbacked = true;
+						target.currentKnockbackPower = this.meleeKnockbackPower;
+						target.knockbackDir.x += normalized.x;
+						target.knockbackDir.y += normalized.y;
+						target.hp -= this.meleeDmg;
+
+						if (target.hp <= 0) {
+							target.kill();
+							this.score += 1;
+						}
+					}
+					
+
+				}
 			}
 
 			this.lastCastMelee = now();

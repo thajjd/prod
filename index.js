@@ -96,7 +96,7 @@ io.on('connection', function(socket){
 	  		var wasCast;
 	  		for (var i = games.length - 1; i >= 0; i--) {
 	  			if (games[i].gameID == thisplr.currentGame) {
-					wasCast = thisplr.castMelee(game[i]);
+					wasCast = thisplr.castMelee(games[i]);
 				}
 	  		}
 	  		if (wasCast) {
