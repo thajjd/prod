@@ -11,7 +11,7 @@ var Animator = function() {
 	this.playAnimation = function(name, callback) {
 		this.currentAnimation = name;
 		this.currentAnimationCallback = callback;
-	}
+	};
 
 	this.render = function(object, ctx){
 		this.frame++;
@@ -49,7 +49,7 @@ var Animator = function() {
 				animation.frameHeight
 			);
 
-			ctx.restore()
+			ctx.restore();
 		}
 	};
 

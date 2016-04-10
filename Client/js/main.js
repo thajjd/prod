@@ -170,6 +170,14 @@ function draw(){
   	ctx.closePath();
 
 	for (var i = connectedPlayers.length - 1; i >= 0; i--) {
+		if (connectedPlayers[i].dead === false) {
+			ctx.beginPath();
+			ctx.fillStyle = connectedPlayers[i].color;
+			ctx.arc(connectedPlayers[i].x, connectedPlayers[i].y, connectedPlayers[i].width, 0, 2 * Math.PI);
+			ctx.fill();
+			ctx.closePath();
+		}
+		
 		connectedPlayers[i].render(ctx);
 	}
 

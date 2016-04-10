@@ -154,9 +154,10 @@ function readyRoom(name) {
 socket.on('update_room', function(room) {
 	if(USER) {
 		renderMatchList();
-
-		if(room.name == OPEN_ROOM) {
-			renderRoom(room);
+		if (room !== undefined) {
+			if(room.name == OPEN_ROOM) {
+				renderRoom(room);
+			}
 		}
 	}
 });

@@ -120,9 +120,11 @@ var player = function (id, name){
   		}
   		return false;
 	};
-	this.castMelee = function(){
+	this.castMelee = function(game){
 		if (now() - this.lastCastMelee >= this.meleeCooldown && this.dead === false) {
-
+			for (var i = game.players.length - 1; i >= 0; i--) {
+				//TODO VAD HÄNDER OM SPELARE ÄR TILLRÄCKLIGT NÄRA??
+			}
 
 			this.lastCastMelee = now();
 			console.log("Melee bror");
