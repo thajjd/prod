@@ -41,6 +41,9 @@ var spaceKey = 32;
 var fKey = 70;
 var rKey = 82;
 
+var arenaTexture = new Image();
+arenaTexture.src = '/grafx/arena.jpg';
+
 
 socket.on('initRemotePlayers', function(data){
 	$.each(data, function(index, player) {
@@ -177,12 +180,23 @@ function draw(){
 	var ctx = canvas.getContext("2d");
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	//Draw Arena
+
+	ctx.save()
 	ctx.beginPath();
   	ctx.arc(arenaPos.x, arenaPos.y, arenaRadius, 0, 2 * Math.PI);
   	ctx.lineWidth = 5;
   	ctx.strokeStyle = '#000000';
   	ctx.stroke();
   	ctx.closePath();
+  	ctx.clip();
+
+  	ctx.drawImage(arenaTexture, 0, 0)
+
+  	ctx.beginPath();
+    ctx.arc(0, 0, arenaRadius, 0, 2 * Math.PI);
+    ctx.clip();
+    ctx.closePath();
+    ctx.restore();
 
 	for (var i = connectedPlayers.length - 1; i >= 0; i--) {
 		if (connectedPlayers[i].dead === false) {
