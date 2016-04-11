@@ -17,6 +17,9 @@ var Player = function() {
 	};
 
 	this.render = function(ctx) {
+		if(!this.dead) {
+			this.forceNoRender = false;
+		}
 		if(this.forceNoRender) {
 			return;
 		}
