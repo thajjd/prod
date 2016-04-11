@@ -11,15 +11,9 @@ var player = function (id, name){
 	this.hp=100;
 	this.color = randomColor();
 
-	var spawnx = Math.random() * 2 * spawnradius - spawnradius;
-	var ylim = Math.sqrt(spawnradius * spawnradius - spawnx * spawnx);
-	var spawny = Math.random() * 2 * ylim - ylim;
-
-	// Offset so that the circle is all on the screen   
-	spawnx += 400;
-	spawny += 400;
-	this.x = spawnx;
-	this.y = spawny;
+	
+	this.x = 0;
+	this.y = 0;
 	this.name = name;
 	this.currentGame;
 	this.dead = false;
@@ -37,6 +31,13 @@ var player = function (id, name){
 	this.prodCooldown = 2000;
 	this.lastCastProd = this.prodCooldown;
 
+	//meteor
+	this.meteorCooldown = 10000;
+	this.lastCastMeteor = this.meteorCooldown;
+	this.startCastingMeteor;
+	this.meteorCastTime = 1000;
+	this.meteorRange;
+
 	//blink
 	this.blinkCooldown = 5000;
 	this.lastCastBlink = this.blinkCooldown;
@@ -46,7 +47,7 @@ var player = function (id, name){
 	this.meleeCooldown = 5000;
 	this.lastCastMelee = this.meleeCooldown;
 	this.startCastingMelee;
-	this.castTime = 1000;
+	this.meleeCastTime = 1000;
 	this.meleeDmg = 10;
 	this.meleeRange = 80;
 	this.meleeKnockbackPower = 10;
@@ -83,9 +84,9 @@ var player = function (id, name){
 			}
 
 			//TODO CASTING TIME
-			if (this.isCasting) {
-				if (true) {}
-			}
+			// if (this.isCasting) {
+			// 	if (true) {}
+			// }
 			//Öhh ah, input
 			if (this.inputData.left === true) {
 				this.x -= speed * deltaTime; 
@@ -159,6 +160,7 @@ var player = function (id, name){
 						target.knockbackDir.x += normalized.x;
 						target.knockbackDir.y += normalized.y;
 						target.hp -= this.meleeDmg;
+						target.lastAttackedBy = this.name;
 
 						if (target.hp <= 0) {
 							target.kill();
@@ -172,6 +174,21 @@ var player = function (id, name){
 
 			this.lastCastMelee = now();
 			console.log("Melee bror");
+			return true;
+  		}
+  		return false;
+	};
+
+	this.castMeteor = function(game, mousePosData){
+		console.log('körs');
+		if (now() - this.lastCastMeteor >= this.meteorCooldown && this.dead === false) {
+			//Stand still while casting
+			this.isCasting = true;
+			this.startCastingMeteor = now();
+
+
+			this.lastCastMeteor = now();
+			console.log("Meteor bror");
 			return true;
   		}
   		return false;

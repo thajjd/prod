@@ -20,6 +20,9 @@ var prodCooldownTime;
 var meleeCooldownUpdated;
 var meleeCooldownTime;
 
+var meteorCooldownUpdated;
+var meteorCooldownTime;
+
 var newTime;
 var oldTime;
 var lastFrameTime;
@@ -36,6 +39,7 @@ var sKey = 83;
 var dKey = 68;
 var spaceKey = 32;
 var fKey = 70;
+var rKey = 82;
 
 
 socket.on('initRemotePlayers', function(data){
@@ -95,6 +99,10 @@ socket.on('cooldownMelee', function(meleeCooldown){
 	meleeCooldownUpdated = Date.now();
 	meleeCooldownTime = meleeCooldown;
 });
+socket.on('cooldownMeteor', function(meteorCooldown){
+	meteorCooldownUpdated = Date.now();
+	meteorCooldownTime = meteorCooldown;
+});
 socket.on('gameOver', function(lastGameName){
 	$('#matchmaking').show();
 	$('#game').hide();
@@ -141,6 +149,13 @@ function startLoop(){
 	}else{
 		if ($('#meleecd').html() !== "REDDY") {
 			$('#meleecd').html("REDDY");
+		}
+	}
+	if (newTime - meteorCooldownUpdated < meteorCooldownTime ) {
+		$('#meteorcd').html(newTime-meteorCooldownUpdated);
+	}else{
+		if ($('#meteorcd').html() !== "REDDY") {
+			$('#meteorcd').html("REDDY");
 		}
 	}
 
@@ -248,7 +263,7 @@ function activateGameInput(){
 	window.addEventListener("keydown", function(e) {
 	    // space and wasd keys
 
-	    if([wKey, aKey, sKey, dKey, spaceKey, fKey].indexOf(e.keyCode) > -1) {
+	    if([wKey, aKey, sKey, dKey, spaceKey, fKey, rKey].indexOf(e.keyCode) > -1) {
 	        e.preventDefault();
 	        keydown(e);
 	    }
@@ -257,7 +272,7 @@ function activateGameInput(){
 	window.addEventListener("keyup", function(e) {
 	    // space and wasd keys
 
-	    if([wKey, aKey, sKey, dKey, spaceKey, fKey].indexOf(e.keyCode) > -1) {
+	    if([wKey, aKey, sKey, dKey, spaceKey, fKey, rKey].indexOf(e.keyCode) > -1) {
 	        e.preventDefault();
 	        keyup(e);
 	    }
@@ -279,6 +294,9 @@ else if (e.keyCode==spaceKey){
 }
 else if (e.keyCode==fKey){
 	socket.emit('castMelee');
+}
+else if (e.keyCode==rKey){
+	socket.emit('castMeteor', mousePos);
 }
 socket.emit('input',inputKey);
 }

@@ -14,6 +14,7 @@ var game = function (io, roomData, id){
 	this.deathCount = 0;
 	this.lavaTickdmg = 0.4;
 	this.arenaDecrease = 0.1;
+	this.spawnradius = 250;
 
 	this.physicsLoopIntervall = 1000/66;
 	// Temporärt test tills lokal transpolering finns
@@ -32,6 +33,21 @@ var game = function (io, roomData, id){
 
 	this.start = function(){
 		//Bind the game instance to the intervall, thus giving the game it's own loop and clock
+		for (var i = this.players.length - 1; i >= 0; i--) {
+			var spawnx = Math.random() * 2 * this.spawnradius - this.spawnradius;
+			var ylim = Math.sqrt(this.spawnradius * this.spawnradius - spawnx * spawnx);
+			var spawny = Math.random() * 2 * ylim - ylim;
+
+			// Offset so that the circle is all on the screen  
+			spawnx += this.arenaPos.x;
+			spawny += this.arenaPos.y;
+			this.players[i].x = spawnx;
+			this.players[i].y = spawny;
+		}
+		
+
+	 
+	
 		this.thePhysicsInterval = setInterval(this.physicsLoop.bind(this), this.physicsLoopIntervall);
 		this.theServerInterval = setInterval(this.serverUpdateLoop.bind(this), this.serverUpdateLoopIntervall);
 
@@ -259,6 +275,16 @@ var game = function (io, roomData, id){
 			thisgame.players[i].hp = 100;
 			thisgame.players[i].dead = false;
 			thisgame.players[i].lastAttackedBy = "";
+			thisgame.players[i].knockbackDir = {x: 0, y: 0};
+
+			var spawnx = Math.random() * 2 * thisgame.spawnradius - thisgame.spawnradius;
+			var ylim = Math.sqrt(thisgame.spawnradius * thisgame.spawnradius - spawnx * spawnx);
+			var spawny = Math.random() * 2 * ylim - ylim;
+			spawnx += thisgame.arenaPos.x;
+			spawny += thisgame.arenaPos.y;
+			thisgame.players[i].x = spawnx;
+			thisgame.players[i].y = spawny;
+
 		}
 		clearInterval(thisgame.thePhysicsInterval);
 		clearInterval(thisgame.theServerInterval);

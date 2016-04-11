@@ -9,6 +9,7 @@ var ID = require('./js/id.js');
 var player=require('./js/player.js').player;
 var game=require('./js/game.js').game;
 var prod=require('./js/prod.js').prod;
+var meteor=require('./js/meteor.js').meteor;
 var helper=require('./js/helperFunctions.js');
 
 //Server variables
@@ -73,6 +74,20 @@ io.on('connection', function(socket){
 	  		var wasCast = thisplr.castBlink(mousePosData);
 	  		if (wasCast) {
 	  			socket.emit('cooldownBlink', thisplr.blinkCooldown);
+	  		}
+	  		wasCast = false;
+	  	});
+
+	  	socket.on('castMeteor', function(mousePosData){
+	  		console.log('tas emot');
+	  		var wasCast;
+	  		for (var i = games.length - 1; i >= 0; i--) {
+	  			if (games[i].gameID == thisplr.currentGame) {
+					wasCast = thisplr.castMeteor(games[i], mousePosData);
+				}
+	  		}
+	  		if (wasCast) {
+	  			socket.emit('cooldownMeteor', thisplr.meteorCooldown);
 	  		}
 	  		wasCast = false;
 	  	});
