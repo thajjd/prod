@@ -58,7 +58,13 @@ var game = function (io, roomData, id){
 		if (this.players.length < 2) {
 			this.stopGame(this);
 		}else{
-			if (this.deathCount >= this.players.length - 1) {
+			var deathCount = 0;
+			for (var i = this.players.length - 1; i >= 0; i--) {
+				if (this.players[i].dead === true) {
+					deathCount ++;
+				}
+			}
+			if (deathCount >= this.players.length - 1) {
 				// io.to(this.gameName).emit('gameOver', this.gameName);
 				console.log(this.players.length);
 				this.nextRound(this);
@@ -147,7 +153,6 @@ var game = function (io, roomData, id){
 												}
 												
 											}
-											this.deathCount ++;
 										}
 										this.prods.splice(i, 1);
 
@@ -256,7 +261,6 @@ var game = function (io, roomData, id){
 							
 						}
 						
-						this.deathCount ++;
 					}
 				}
 			}
@@ -269,7 +273,6 @@ var game = function (io, roomData, id){
 	};
 	this.nextRound = function(thisgame){
 		thisgame.prods = [];
-		thisgame.deathCount = 0;
 		thisgame.arenaRadius = 400;
 
 		for (var i = thisgame.players.length - 1; i >= 0; i--) {
