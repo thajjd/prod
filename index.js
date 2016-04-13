@@ -48,21 +48,19 @@ io.on('connection', function(socket){
   		if (ignAvailable) {
   			thisplr = new player(id, newUsername);
   			connectedPlayers.push(thisplr);
+  			socket.emit('assignName', newUsername);
   		}
 
   	});
 
   	socket.on('joinGame', function(data){
   		
-
   		socket.join(data.roomName);
 
   		socket.on('leaveGame', function(data){
 	  		socket.leave(data.roomName);
 	  	});
 
-	  	
-	  	
 		socket.emit('initRemotePlayers', connectedPlayers);
 
 	  	socket.on('input', function(inputData){
@@ -83,7 +81,7 @@ io.on('connection', function(socket){
 	  		var wasCast;
 	  		for (var i = games.length - 1; i >= 0; i--) {
 	  			if (games[i].gameID == thisplr.currentGame) {
-					wasCast = thisplr.castMeteor(games[i], mousePosData);
+					wasCast = thisplr.castMeteor(thisplr, games[i], mousePosData);
 				}
 	  		}
 	  		if (wasCast) {

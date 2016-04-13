@@ -1,0 +1,9 @@
+stages:
+  - deploy
+
+staging:
+  stage: deploy
+  script:
+    - ./deploy-staging.sh
+  only: 
+    - master@thajjd/prod

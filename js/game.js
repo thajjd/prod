@@ -8,6 +8,7 @@ var game = function (io, roomData, id){
 	this.arenaPos= {x: 400, y: 400};
 	this.players = [];
 	this.prods = [];
+	this.meteors = [];
 	this.spawns = {};
 	this.io = io;
 	this.gameName = roomData.name;
@@ -276,6 +277,12 @@ var game = function (io, roomData, id){
 			thisgame.players[i].dead = false;
 			thisgame.players[i].lastAttackedBy = "";
 			thisgame.players[i].knockbackDir = {x: 0, y: 0};
+
+			//Reset all spell cooldowns
+			thisgame.players[i].lastCastMeteor -= thisgame.players[i].meteorCooldown;
+			thisgame.players[i].lastCastProd -= thisgame.players[i].prodCooldown;
+			thisgame.players[i].lastCastMelee -= thisgame.players[i].meleeCooldown;
+			thisgame.players[i].lastCastBlink -= thisgame.players[i].blinkCooldown;
 
 			var spawnx = Math.random() * 2 * thisgame.spawnradius - thisgame.spawnradius;
 			var ylim = Math.sqrt(thisgame.spawnradius * thisgame.spawnradius - spawnx * spawnx);

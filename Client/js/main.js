@@ -3,8 +3,9 @@ var arenaRadius;
 var arenaPos = {x: 0, y: 0};
 var connectedPlayers = [];
 var prods = [];
+var meteors = [];
 var canvas = document.getElementById('canvas');
-
+var selfName = "";
 var mousePos = {x: 0, y: 0};
 
 var inputKey = {left:false,up:false,right:false,down:false,space:false};
@@ -33,6 +34,8 @@ var deltaTime;
 
 var gameRunning = false;
 
+
+
 var wKey = 87;
 var aKey = 65;
 var sKey = 83;
@@ -44,13 +47,16 @@ var rKey = 82;
 var arenaTexture = new Image();
 arenaTexture.src = '/grafx/arena.jpg';
 
-
+socket.on('assignName', function(myName){
+		selfName = myName;
+});
 socket.on('initRemotePlayers', function(data){
-	$.each(data, function(index, player) {
-		var obj = new Player();
-		obj.init(player);
-		connectedPlayers.push(obj);
-	});
+	// $.each(data, function(index, player) {
+	// 	var obj = new Player();
+	// 	obj.init(player);
+	// 	obj.myName = selfName;
+	// 	connectedPlayers.push(obj);
+	// });
 });
 
 socket.on('update', function(data){
@@ -62,17 +68,19 @@ socket.on('update', function(data){
 				playerIsLoaded = true;
 				localPlayer.load(serverPlayer);
 			}
-		})
+		});
 
 		if(!playerIsLoaded) {
 			var obj = new Player();
 			obj.init(serverPlayer);
+			obj.myName = selfName;
 			connectedPlayers.push(obj);
 		}
-	})
+	});
 
 
 	prods = data.prods;
+	meteors = data.meteors;
 	arenaRadius = data.arenaRadius;
 	arenaPos = data.arenaPos;
 });
@@ -134,31 +142,31 @@ function startLoop(){
 	fpsTick++;
 
 	if (newTime - blinkCooldownUpdated < blinkCooldownTime ) {
-		$('#blinkcd').html(newTime-blinkCooldownUpdated);
+		$('#blinkcd').html((blinkCooldownUpdated + blinkCooldownTime) - newTime);
 	}else{
-		if ($('#blinkcd').html() !== "REDDY") {
-			$('#blinkcd').html("REDDY");
+		if ($('#blinkcd.span').html() !== "REDDY") {
+			$('#blinkcd').html("<span style='color:green;'>REDDY</span>");
 		}
 	}
 	if (newTime - prodCooldownUpdated < prodCooldownTime ) {
-		$('#prodcd').html(newTime-prodCooldownUpdated);
+		$('#prodcd').html((prodCooldownUpdated + prodCooldownTime) - newTime);
 	}else{
-		if ($('#prodcd').html() !== "REDDY") {
-			$('#prodcd').html("REDDY");
+		if ($('#prodcd.span').html() !== "REDDY") {
+			$('#prodcd').html("<span style='color:green;'>REDDY</span>");
 		}
 	}
 	if (newTime - meleeCooldownUpdated < meleeCooldownTime ) {
-		$('#meleecd').html(newTime-meleeCooldownUpdated);
+		$('#meleecd').html((meleeCooldownUpdated + meleeCooldownTime) - newTime);
 	}else{
-		if ($('#meleecd').html() !== "REDDY") {
-			$('#meleecd').html("REDDY");
+		if ($('#meleecd.span').html() !== "REDDY") {
+			$('#meleecd').html("<span style='color:green;'>REDDY</span>");
 		}
 	}
 	if (newTime - meteorCooldownUpdated < meteorCooldownTime ) {
-		$('#meteorcd').html(newTime-meteorCooldownUpdated);
+		$('#meteorcd').html((meteorCooldownUpdated + meteorCooldownTime) - newTime);
 	}else{
-		if ($('#meteorcd').html() !== "REDDY") {
-			$('#meteorcd').html("REDDY");
+		if ($('#meteorcd.span').html() !== "REDDY") {
+			$('#meteorcd').html("<span style='color:green;'>REDDY</span>");
 		}
 	}
 
@@ -181,7 +189,7 @@ function draw(){
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	//Draw Arena
 
-	ctx.save()
+	ctx.save();
 	ctx.beginPath();
   	ctx.arc(arenaPos.x, arenaPos.y, arenaRadius, 0, 2 * Math.PI);
   	ctx.lineWidth = 5;
@@ -189,8 +197,8 @@ function draw(){
   	ctx.stroke();
   	ctx.closePath();
   	ctx.clip();
-
-  	ctx.drawImage(arenaTexture, 0, 0)
+  	//Lava-arena
+  	// ctx.drawImage(arenaTexture, 0, 0);
 
   	ctx.beginPath();
     ctx.arc(0, 0, arenaRadius, 0, 2 * Math.PI);
@@ -219,14 +227,28 @@ function draw(){
 			ctx.closePath();
 		}
 	}
+	if (typeof meteors !== 'undefined' && meteors.length > 0) {
+		for (var i = meteors.length - 1; i >= 0; i--) {
+			ctx.beginPath();
+			ctx.fillStyle = meteors[i].color;
+			ctx.arc(meteors[i].targetPos.x, meteors[i].targetPos.y, meteors[i].radius, 0, 2*Math.PI);
+			ctx.fill();
+			ctx.closePath();
+		}
+	}
 	
 
-	
+	ctx.beginPath();
+	ctx.fillStyle = "#ffffff";
+  	ctx.arc(mousePos.x - (cursorWidth + 4)/2,mousePos.y - (cursorWidth + 4)/2,(cursorWidth + 4)/2, 0, 2 * Math.PI);
+  	ctx.fill();
+  	ctx.closePath();
 	ctx.beginPath();
 	ctx.fillStyle = "#000000";
   	ctx.arc(mousePos.x - cursorWidth/2,mousePos.y - cursorWidth/2,cursorWidth/2, 0, 2 * Math.PI);
   	ctx.fill();
   	ctx.closePath();
+  	
 
 }
 

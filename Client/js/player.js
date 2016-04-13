@@ -1,11 +1,13 @@
 var Player = function() {
 	this.animator = new Animator();
 
+	this.isSelf = false;
+
 	this.init = function(data) {
 		this.animator.setAnimationSet('medivh');
 		this.forceNoRender = false;
 		this.load(data);
-	}
+	};
  	
 	this.load = function(data) {
 		var _this = this;
@@ -26,7 +28,7 @@ var Player = function() {
 
 		this.determineHeading();
 
-		if(this.heading != '') {
+		if(this.heading !== '') {
 			this.animator.playAnimation('walk');
 		} else {
 			this.animator.playAnimation('idle');
@@ -37,7 +39,7 @@ var Player = function() {
 
 			this.animator.playAnimation('death', function() {
 				_this.forceNoRender = true;
-			})
+			});
 		}
 
 		this.animator.render(this, ctx);
@@ -50,7 +52,12 @@ var Player = function() {
 
 		ctx.beginPath();
 		ctx.rect( this.x - 25, this.y - 40 , 50 - ((100  - this.hp) /2)  , 6 );
-		ctx.fillStyle = "#00F900";
+		if (this.myName == this.name) {
+			ctx.fillStyle = "#00F900";
+		}else{
+			ctx.fillStyle = "#0083E5";
+		}
+		
 		ctx.fill();
 		ctx.closePath();
 		
@@ -66,8 +73,8 @@ var Player = function() {
 				if(_this.inputData[key]) {
 					_this.heading += key;
 				}
-			})
+			});
 		}
-	}
+	};
 };
 
