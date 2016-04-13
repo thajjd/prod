@@ -77,17 +77,18 @@ io.on('connection', function(socket){
 	  	});
 
 	  	socket.on('castMeteor', function(mousePosData){
-	  		console.log('tas emot');
-	  		var wasCast;
 	  		for (var i = games.length - 1; i >= 0; i--) {
 	  			if (games[i].gameID == thisplr.currentGame) {
-					wasCast = thisplr.castMeteor(thisplr, games[i], mousePosData);
+	  				if (now() - thisplr.lastCastMeteor >= thisplr.meteorCooldown && thisplr.dead === false) {
+						//Stand still while casting
+						var newmeteor = new meteor(id, thisplr.name, mousePosData, thisplr.color, now());
+						games[i].meteors.push(newmeteor);
+						thisplr.lastCastMeteor = now();
+						socket.emit('cooldownMeteor', thisplr.meteorCooldown);
+						console.log("Meteor bror");
+			  		}
 				}
 	  		}
-	  		if (wasCast) {
-	  			socket.emit('cooldownMeteor', thisplr.meteorCooldown);
-	  		}
-	  		wasCast = false;
 	  	});
 
 	  	//Attack

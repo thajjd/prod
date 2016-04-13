@@ -84,6 +84,7 @@ var game = function (io, roomData, id){
 		
 		this.arenaTick();
 		
+		this.checkMeteorCollision();
 		//Did a prod collide with a prod?
 		this.prodprodcollision();
 		
@@ -95,6 +96,13 @@ var game = function (io, roomData, id){
 			
 
 			
+	};
+	this.checkMeteorCollision = function(){
+		if (typeof this.meteors !== undefined && this.meteors.length > 0) {
+			for (var i = this.meteors.length - 1; i >= 0; i--) {
+				this.meteors[i].update(this.deltaTime);
+			}
+		}
 	};
 	this.checkProdTTL = function(){
 		if (typeof this.prods !== undefined && this.prods.length > 0) {
@@ -268,7 +276,7 @@ var game = function (io, roomData, id){
 	};
 
 	this.serverUpdateLoop = function(){
-		io.to(this.gameName).emit('update', {players:this.players, prods:this.prods, arenaRadius: this.arenaRadius, arenaPos: this.arenaPos});
+		io.to(this.gameName).emit('update', {players:this.players, prods:this.prods, meteors:this.meteors,  arenaRadius: this.arenaRadius, arenaPos: this.arenaPos});
 		
 	};
 	this.nextRound = function(thisgame){

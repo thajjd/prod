@@ -179,22 +179,6 @@ var player = function (id, name){
   		return false;
 	};
 
-	this.castMeteor = function(thisplr, game, mousePosData){
-		console.log('körs');
-		if (now() - this.lastCastMeteor >= this.meteorCooldown && this.dead === false) {
-			//Stand still while casting
-			this.isCasting = true;
-			this.startCastingMeteor = now();
-			var meteor = new meteor(thisplr.id, thisplr.name, mousePosData, thisplr.color, now());
-			game.meteors.push(meteor);
-
-			this.lastCastMeteor = now();
-			console.log("Meteor bror");
-			return true;
-  		}
-  		return false;
-	};
-
 };
 
 function randomColor() {

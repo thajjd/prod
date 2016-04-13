@@ -229,11 +229,21 @@ function draw(){
 	}
 	if (typeof meteors !== 'undefined' && meteors.length > 0) {
 		for (var i = meteors.length - 1; i >= 0; i--) {
-			ctx.beginPath();
-			ctx.fillStyle = meteors[i].color;
-			ctx.arc(meteors[i].targetPos.x, meteors[i].targetPos.y, meteors[i].radius, 0, 2*Math.PI);
-			ctx.fill();
-			ctx.closePath();
+			
+			if (meteors[i].triggered === false) {
+				ctx.beginPath();
+				ctx.strokeStyle = meteors[i].color;
+				ctx.arc(meteors[i].targetPos.x, meteors[i].targetPos.y, meteors[i].radius, 0, 2*Math.PI);
+				ctx.stroke();
+				ctx.closePath();
+
+				ctx.beginPath();
+				ctx.fillStyle = meteors[i].color;
+				ctx.arc(meteors[i].targetPos.x, meteors[i].targetPos.y, ((meteors[i].lastTick/(meteors[i].timeCreated + meteors[i].delay)) * meteors[i].radius), 0, 2*Math.PI);
+				console.log(((meteors[i].lastTick/(meteors[i].timeCreated + meteors[i].delay)) * meteors[i].radius));
+				ctx.fill();
+				ctx.closePath();
+			}
 		}
 	}
 	
