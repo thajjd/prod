@@ -120,24 +120,6 @@ io.on('connection', function(socket){
 	  	});
   	});
 
-  // 	socket.on('rematch', function(data){
-  // 		socket.leave(data.roomName);
-  // 		socket.join(data.roomName);
-
-  // 		socket.on('leaveGame', function(data){
-	 //  		socket.leave(data.roomName);
-	 //  	});
-
-	  	
-	  	
-		// socket.emit('initRemotePlayers', connectedPlayers);
-
-	 //  	socket.on('input', function(inputData){
-	 //  		thisplr.inputData = inputData;
-	 //  	});
-
-  // 	});
-
   	socket.on('disconnect', function(){
 		console.log(id + ' disconnected');
 		for (var i = rooms.length - 1; i >= 0; i--) {

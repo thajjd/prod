@@ -32,7 +32,7 @@ var player = function (id, name){
 	this.lastCastProd = this.prodCooldown;
 
 	//meteor
-	this.meteorCooldown = 10000;
+	this.meteorCooldown = 3000;
 	this.lastCastMeteor = this.meteorCooldown;
 	this.startCastingMeteor;
 	this.meteorCastTime = 1000;
@@ -48,7 +48,7 @@ var player = function (id, name){
 	this.lastCastMelee = this.meleeCooldown;
 	this.startCastingMelee;
 	this.meleeCastTime = 1000;
-	this.meleeDmg = 10;
+	this.meleeDmg = 20;
 	this.meleeRange = 80;
 	this.meleeKnockbackPower = 10;
 	
@@ -157,8 +157,8 @@ var player = function (id, name){
 						var normalized = helper.normalize(distance);
 						target.isKnockbacked = true;
 						target.currentKnockbackPower = this.meleeKnockbackPower;
-						target.knockbackDir.x += normalized.x;
-						target.knockbackDir.y += normalized.y;
+						target.knockbackDir.x = normalized.x;
+						target.knockbackDir.y = normalized.y;
 						target.hp -= this.meleeDmg;
 						target.lastAttackedBy = this.name;
 

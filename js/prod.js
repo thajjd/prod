@@ -9,7 +9,7 @@ var prod = function (creatorID, creatorName, targetPos, currentPlayerPosX, curre
 	this.creatorName = creatorName;
 	this.width = 15;
 	this.height = 15;
-	this.dmg = 10;
+	this.dmg = 20;
 	this.ttl = 2000;
 	this.timeCreated = timeCreated;
 	// targetPos = correctAim(targetPos);
@@ -21,7 +21,7 @@ var prod = function (creatorID, creatorName, targetPos, currentPlayerPosX, curre
 	this.color = playerColor;
 	
 	this.prodId;
-	this.knockbackPower = 12;
+	this.knockbackPower = 20;
 
 
 	this.update = function(deltaTime){

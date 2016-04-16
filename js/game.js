@@ -143,8 +143,8 @@ var game = function (io, roomData, id){
 										var distance = helper.getDistance(avatarCenter, prodCenter);
 										var normalized = helper.normalize(distance);
 										b.currentKnockbackPower = a.knockbackPower;
-										b.knockbackDir.x += normalized.x;
-										b.knockbackDir.y += normalized.y;
+										b.knockbackDir.x = normalized.x;
+										b.knockbackDir.y = normalized.y;
 										b.isKnockbacked = true;
 
 										console.log("Player - prod collision");
@@ -288,6 +288,7 @@ var game = function (io, roomData, id){
 			thisgame.players[i].dead = false;
 			thisgame.players[i].lastAttackedBy = "";
 			thisgame.players[i].knockbackDir = {x: 0, y: 0};
+			thisgame.players[i].knockbackPower = 0;
 
 			//Reset all spell cooldowns
 			thisgame.players[i].lastCastMeteor -= thisgame.players[i].meteorCooldown;
