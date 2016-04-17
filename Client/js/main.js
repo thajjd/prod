@@ -178,7 +178,7 @@ function startLoop(){
 }
 
 function mouseClickCanvas(e){
-	console.log("klick");
+	console.log("Försöker skjuta en prod bror");
   socket.emit('prod',mousePos);
 }
 
@@ -206,6 +206,25 @@ function draw(){
     ctx.closePath();
     ctx.restore();
 
+
+    if (typeof meteors !== 'undefined' && meteors.length > 0) {
+		for (var i = meteors.length - 1; i >= 0; i--) {
+		
+			ctx.beginPath();
+			ctx.strokeStyle = meteors[i].color;
+			ctx.arc(meteors[i].targetPos.x, meteors[i].targetPos.y, meteors[i].radius, 0, 2*Math.PI);
+			ctx.stroke();
+			ctx.closePath();
+
+			ctx.beginPath();
+			ctx.fillStyle = meteors[i].color;
+			ctx.arc(meteors[i].targetPos.x, meteors[i].targetPos.y,( ( ( ( ( 100 * ( meteors[i].lastTick - meteors[i].timeCreated ) ) / ( meteors[i].delay ) ).toFixed(2) ) / 100) * meteors[i].radius), 0, 2*Math.PI);
+			ctx.fill();
+			ctx.closePath();
+
+		}
+	}
+
 	for (var i = connectedPlayers.length - 1; i >= 0; i--) {
 		if (connectedPlayers[i].dead === false) {
 			ctx.beginPath();
@@ -218,6 +237,8 @@ function draw(){
 		connectedPlayers[i].render(ctx);
 	}
 
+
+
 	if (typeof prods !== 'undefined' && prods.length > 0) {
 		for (var i = prods.length - 1; i >= 0; i--) {
 			ctx.beginPath();
@@ -227,25 +248,8 @@ function draw(){
 			ctx.closePath();
 		}
 	}
-	if (typeof meteors !== 'undefined' && meteors.length > 0) {
-		for (var i = meteors.length - 1; i >= 0; i--) {
-			
-			if (meteors[i].triggered === false) {
-				ctx.beginPath();
-				ctx.strokeStyle = meteors[i].color;
-				ctx.arc(meteors[i].targetPos.x, meteors[i].targetPos.y, meteors[i].radius, 0, 2*Math.PI);
-				ctx.stroke();
-				ctx.closePath();
 
-				ctx.beginPath();
-				ctx.fillStyle = meteors[i].color;
-				ctx.arc(meteors[i].targetPos.x, meteors[i].targetPos.y, ((meteors[i].lastTick/(meteors[i].timeCreated + meteors[i].delay)) * meteors[i].radius), 0, 2*Math.PI);
-				console.log(((meteors[i].lastTick/(meteors[i].timeCreated + meteors[i].delay)) * meteors[i].radius));
-				ctx.fill();
-				ctx.closePath();
-			}
-		}
-	}
+		
 	
 
 	ctx.beginPath();

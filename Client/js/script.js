@@ -7,7 +7,14 @@ var OPEN_ROOM = '';
 $(document).ready(function() {
 	$('input[name="submit-name"]').click(function() {
 		USER = $('input[name="name"]').val();
-		socket.emit('checkUsername', USER);
+		var usernameisokay = checkUsernamevalidity(USER);
+		if (usernameisokay) {
+			socket.emit('checkUsername', USER);
+		}else{
+			$('.errorMsg').show();
+			$('.errorMsg').html("FUCK! only the characters a-z and the numbers 0-9 are allowed dude...");
+		}
+		
 		socket.on('checkUsernameAnswer', function(ignAvailable){
 			if (ignAvailable === true) {
 				$('.name-form').hide();
@@ -23,6 +30,7 @@ $(document).ready(function() {
 
 		return false;
 	});
+
 
 	$('.create-room').click(function() {
 		var roomName = $('input[name="room-name"]').val();
@@ -41,6 +49,15 @@ $(document).ready(function() {
 	});
 });
 
+function checkUsernamevalidity(username){
+	var re = /^[a-z0-9]+$/i;
+	var OK = re.exec(username);
+	if (!OK) {
+		console.log('Weird characters...');
+		return false;
+	}
+	return true;
+}
 function renderMatchList() {
 	$('.match-list').show();
 

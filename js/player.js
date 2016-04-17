@@ -50,7 +50,7 @@ var player = function (id, name){
 	this.meleeCastTime = 1000;
 	this.meleeDmg = 20;
 	this.meleeRange = 80;
-	this.meleeKnockbackPower = 10;
+	this.meleeKnockbackPower = 13;
 	
 	this.currentGame;
 	this.acceleration = 1;

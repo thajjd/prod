@@ -3,7 +3,7 @@ var server = require('http').createServer(app);
 var bodyParser = require('body-parser');
 var io = require('socket.io')(server);
 var now = require("performance-now");
-var ID = require('./js/id.js');
+ID = require('./js/id.js');
 
 //resources
 var player=require('./js/player.js').player;
@@ -13,7 +13,7 @@ var meteor=require('./js/meteor.js').meteor;
 var helper=require('./js/helperFunctions.js');
 
 //Server variables
-var games = [];
+games = []; //global variable
 var connectedPlayers = [];
 // var prods = [];
 
@@ -81,7 +81,8 @@ io.on('connection', function(socket){
 	  			if (games[i].gameID == thisplr.currentGame) {
 	  				if (now() - thisplr.lastCastMeteor >= thisplr.meteorCooldown && thisplr.dead === false) {
 						//Stand still while casting
-						var newmeteor = new meteor(id, thisplr.name, mousePosData, thisplr.color, now());
+						var newmeteorid = ID.id();
+						var newmeteor = new meteor(id, thisplr.name, mousePosData, thisplr.color, now(), newmeteorid);
 						games[i].meteors.push(newmeteor);
 						thisplr.lastCastMeteor = now();
 						socket.emit('cooldownMeteor', thisplr.meteorCooldown);

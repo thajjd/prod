@@ -21,7 +21,7 @@ var prod = function (creatorID, creatorName, targetPos, currentPlayerPosX, curre
 	this.color = playerColor;
 	
 	this.prodId;
-	this.knockbackPower = 20;
+	this.knockbackPower = 12;
 
 
 	this.update = function(deltaTime){

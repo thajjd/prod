@@ -100,7 +100,10 @@ var game = function (io, roomData, id){
 	this.checkMeteorCollision = function(){
 		if (typeof this.meteors !== undefined && this.meteors.length > 0) {
 			for (var i = this.meteors.length - 1; i >= 0; i--) {
-				this.meteors[i].update(this.deltaTime);
+				if (this.meteors[i] !== undefined) {
+					this.meteors[i].update(this.deltaTime);
+
+				}
 			}
 		}
 	};
@@ -276,11 +279,12 @@ var game = function (io, roomData, id){
 	};
 
 	this.serverUpdateLoop = function(){
-		io.to(this.gameName).emit('update', {players:this.players, prods:this.prods, meteors:this.meteors,  arenaRadius: this.arenaRadius, arenaPos: this.arenaPos});
+		io.to(this.gameName).emit('update', {players:this.players, prods:this.prods, meteors: this.meteors,  arenaRadius: this.arenaRadius, arenaPos: this.arenaPos});
 		
 	};
 	this.nextRound = function(thisgame){
 		thisgame.prods = [];
+		thisgame.meteors = [];
 		thisgame.arenaRadius = 400;
 
 		for (var i = thisgame.players.length - 1; i >= 0; i--) {
@@ -289,7 +293,7 @@ var game = function (io, roomData, id){
 			thisgame.players[i].lastAttackedBy = "";
 			thisgame.players[i].knockbackDir = {x: 0, y: 0};
 			thisgame.players[i].knockbackPower = 0;
-
+			
 			//Reset all spell cooldowns
 			thisgame.players[i].lastCastMeteor -= thisgame.players[i].meteorCooldown;
 			thisgame.players[i].lastCastProd -= thisgame.players[i].prodCooldown;
