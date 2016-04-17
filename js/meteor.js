@@ -6,9 +6,9 @@ var meteor = function (creatorID, creatorName, targetPos, playerColor, timeCreat
 	this.id;
 	this.creator = creatorID;
 	this.creatorName = creatorName;
-	this.radius = 50;
+	this.radius = 70;
 	this.dmg = 20;
-	this.delay = 3000;
+	this.delay = 1500;
 	this.timeCreated = timeCreated;
 	this.triggered = false;
 	// targetPos = correctAim(targetPos);
