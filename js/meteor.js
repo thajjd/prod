@@ -19,7 +19,6 @@ var meteor = function (creatorID, creatorName, targetPos, playerColor, timeCreat
 
 	this.destroythis = false;
 
-
 	this.update = function(deltaTime){
 
 		this.lastTick = now();

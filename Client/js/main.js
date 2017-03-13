@@ -340,13 +340,13 @@ else if (e.keyCode==dKey)
 else if (e.keyCode==sKey)
 	inputKey.down=true;
 else if (e.keyCode==spaceKey){
-	socket.emit('castBlink', mousePos);
+	
 }
 else if (e.keyCode==fKey){
-	socket.emit('castMelee');
+
 }
 else if (e.keyCode==rKey){
-	socket.emit('castMeteor', mousePos);
+
 }
 socket.emit('input',inputKey);
 }
@@ -360,7 +360,15 @@ else if (e.keyCode==dKey)
 	inputKey.right=false;
 else if (e.keyCode==sKey)
 	inputKey.down=false;
- 
+else if (e.keyCode==spaceKey){
+	socket.emit('castBlink', mousePos);
+}
+else if (e.keyCode==fKey){
+	socket.emit('castMelee');
+}
+else if (e.keyCode==rKey){
+	socket.emit('castMeteor', mousePos);
+}
 socket.emit('input',inputKey);
 }
 //=========== End of INPUT =========
